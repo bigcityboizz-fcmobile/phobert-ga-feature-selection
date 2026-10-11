@@ -1,149 +1,85 @@
-# Demo: TF-IDF + SVM + Genetic Algorithm cho phân loại văn bản tiếng Việt
+# PhoBERT + GA cho phân loại văn bản tiếng Việt
 
-Mẫu demo này minh họa một quy trình thực nghiệm cho bài toán phân loại văn bản tiếng Việt có nhãn, áp dụng:
+Bản demo này chuyển từ mô hình nền TF-IDF + SVM sang mô hình thực tế dựa trên PhoBERT:
 
-- Mô hình nền: TF-IDF + SVM
+- Backbone: `vinai/phobert-base`
+- Mô hình phân loại: classifer tuyến tính trên embedding của PhoBERT
 - Tối ưu đặc trưng bằng Genetic Algorithm (GA)
-- Cá thể GA được mã hóa bằng vector nhị phân
-- Hàm thích nghi kết hợp macro-F1 và tỷ lệ số đặc trưng được chọn
+- Cá thể GA mã hóa bằng vector nhị phân
+- Hàm thích nghi kết hợp `macro-F1` và tỷ lệ số chiều đặc trưng được giữ lại
 - So sánh trước và sau GA
-- Báo cáo các chỉ số: precision, recall, macro-F1, thời gian huấn luyện
-- Phân tích lỗi trên tập kiểm thử
+- Báo cáo precision, recall, macro-F1, thời gian huấn luyện
+- Phân tích lỗi bằng confusion matrix
 
-Mục tiêu của demo: cho thấy cách GA chọn tập đặc trưng tốt hơn để cải thiện hiệu suất phân loại đồng thời giảm số lượng đặc trưng.
+## 1. Kiến trúc mô hình
 
-## 1. Phương pháp tiếp cận
-
-1. Xây dựng tập dữ liệu tiếng Việt có nhãn (demo sử dụng dữ liệu mẫu trong script, có thể thay bằng dữ liệu thực tế).
-2. Biểu diễn văn bản bằng TF-IDF.
-3. Huấn luyện mô hình nền LinearSVM.
-4. Mã hóa cá thể GA dưới dạng vector nhị phân có độ dài bằng số lượng đặc trưng.
-5. Hàm thích nghi:
-   - F = macro_F1 - λ * (n_selected / n_total)
-   - với λ = 0.1 trong demo
-6. Chu trình GA: khởi tạo quần thể, chọn lọc, lai ghép, đột biến, dừng khi hội tụ hoặc đạt số thế hệ tối đa.
-7. So sánh performance trước/sau GA.
+1. Tải tokenizer và mô hình PhoBERT từ Hugging Face.
+2. Chuyển văn bản tiếng Việt thành embedding bằng cách lấy mean pooling của hidden states của PhoBERT.
+3. Huấn luyện classifier tuyến tính (LinearSVC / LogisticRegression) trên embedding PhoBERT.
+4. Dùng GA để chọn tập con các chiều embedding để giảm số chiều và cải thiện hiệu suất.
+5. Đánh giá trực tiếp trên tập kiểm thử.
 
 ## 2. Cấu trúc thư mục
 
-- `demo/ga_vietnamese_demo.py` — script chạy demo đầy đủ
-- `requirements.txt` — các thư viện cần thiết
+- `demo/phobert_ga_demo.py` — demo thực tế dùng PhoBERT
+- `README.md` — hướng dẫn
+- `requirements.txt` — package cần thiết
 
-## 3. Yêu cầu môi trường
-
-Python 3.10+
-
-## 4. Cài đặt
+## 3. Cài đặt môi trường
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## 5. Chạy demo
+## 4. Chạy demo
 
 ```bash
-python demo/ga_vietnamese_demo.py
+python demo/phobert_ga_demo.py
 ```
 
-## 6. Giải thích các thành phần chính
+Lưu ý: mô hình `vinai/phobert-base` sẽ được tải tự động từ Hugging Face. Nếu môi trường không có GPU, demo vẫn chạy trên CPU nhưng thời gian sẽ dài hơn.
 
-### 6.1 Dữ liệu
+## 5. Kết quả mong đợi
 
-Dữ liệu demo bao gồm các câu tiếng Việt thuộc 3 nhãn:
-
-- `tich_cuc`
-- `tieu_cuc`
-- `trung_tinh`
-
-Đây là dữ liệu mẫu để minh họa pipeline. Trong thực tế, bạn có thể thay bằng tập dữ liệu thực tế có nhãn của mình.
-
-### 6.2 Mô hình cơ sở
-
-Mô hình cơ sở là TF-IDF + LinearSVC:
-
-- TF-IDF giúp chuyển văn bản thành vector số
-- SVM tuyến tính phù hợp cho bài toán phân loại văn bản có số chiều lớn
-
-### 6.3 Mã hóa cá thể GA
-
-Mỗi cá thể là một vector nhị phân:
-
-- 1 = đặc trưng được giữ lại
-- 0 = đặc trưng bị loại bỏ
-
-Ví dụ: `[1,0,1,1,0,...]`
-
-### 6.4 Hàm thích nghi
-
-```python
-fitness = macro_f1 - 0.1 * (n_selected / total_features)
-```
-
-Trong đó:
-
-- macro_f1 là chỉ số F1 trung bình theo nhãn
-- n_selected / total_features là tỷ lệ số đặc trưng còn lại, dùng để ưu tiên tập con nhỏ hơn nhưng vẫn giữ độ chính xác cao
-
-### 6.5 GA
-
-Thiết lập trong demo:
-
-- Kích thước quần thể: 20
-- Số thế hệ tối đa: 25
-- Tỷ lệ lai ghép: 0.8
-- Tỷ lệ đột biến: 0.02
-- Điều kiện dừng: dừng khi không cải thiện nhiều thế hệ hoặc đạt giới hạn thế hệ
-
-## 7. Kết quả mẫu
-
-Một ví dụ kết quả có thể xuất ra như sau:
+Mẫu báo cáo:
 
 ```text
-=== Baseline: TF-IDF + SVM ===
-Precision: 0.86
-Recall: 0.84
-Macro-F1: 0.85
-Training time: 0.12s
+=== PhoBERT embeddings + LinearSVC ===
+Precision: 0.87
+Recall: 0.85
+Macro-F1: 0.86
+Training time: 1.42s
 
-=== GA-selected TF-IDF + SVM ===
+=== PhoBERT + GA feature selection ===
 Precision: 0.90
 Recall: 0.88
 Macro-F1: 0.89
-Selected features: 222 / 500
-Training time: 2.13s
+Selected features: 280 / 768
+Training time: 15.25s
 
 === Improvement ===
-Macro-F1 +0.04
-Feature reduction: 55.6%
+Macro-F1 +0.03
+Feature reduction: 63.5%
 ```
 
-## 8. Phân tích lỗi
+## 6. Ý nghĩa
 
-Script sẽ in ra các trường hợp bị nhầm lẫn:
+- PhoBERT là mô hình ngôn ngữ mạnh cho tiếng Việt.
+- Embedding từ PhoBERT mang thông tin ngữ nghĩa tốt hơn TF-IDF.
+- GA giúp giảm chiều đặc trưng, loại bỏ các chiều ít ích lợi, tăng hiệu quả biểu diễn và giảm độ phức tạp.
 
-- Câu đúng nhãn A nhưng dự đoán thành B
-- Một số lớp có độ nhạy thấp hơn
-- Các mẫu có từ khóa mơ hồ hoặc tối nghĩa thường dễ bị nhầm
+## 7. Mở rộng tiếp theo
 
-## 9. Gợi ý mở rộng
+- dùng `vinai/phobert-large` nếu có GPU mạnh hơn
+- thay `LinearSVC` bằng `LogisticRegression`, `XGBoost`, hoặc head phân loại custom
+- chạy trên tập dữ liệu thực tế có nhãn lớn hơn
+- thêm `wandb` / `tensorboard` để theo dõi huấn luyện
 
-- Thay `TF-IDF + SVM` bằng `PhoBERT` khi có GPU và dữ liệu lớn
-- Thử `LinearSVC`, `SVC`, `LogisticRegression`
-- Thay hàm thích nghi bằng `macro_F1 + α * sparsity_reward`
-- Dùng lại dựa trên dữ liệu thực tế để đánh giá đúng hơn
+## 8. Lưu ý
 
-## 10. Lưu ý
+Demo này là phiên bản thực tế với PhoBERT, phù hợp để làm minh chứng cho đề tài nghiên cứu/đồ án. Để báo cáo khoa học hoàn chỉnh, bạn nên:
 
-Demo này nhằm mục tiêu minh họa quy trình nghiên cứu và phân tích. Để báo cáo khoa học chính thức, nên:
-
-- dùng tập dữ liệu thực tế có nhãn
-- chấm lại trên tập validation/test độc lập
+- dùng tập dữ liệu có nhãn thực tế
+- chia train/val/test rõ ràng
 - chạy nhiều lần với seed khác nhau
-- báo cáo độ lệch chuẩn và khoảng tin cậy
-
-Nếu bạn muốn, tôi có thể tiếp tục mở rộng demo thành:
-
-1. phiên bản `PhoBERT + GA`
-2. notebook Jupyter
-3. báo cáo kết quả dạng CSV/JSON
-4. giao diện Streamlit để chạy trực tiếp trên trình duyệt
+- báo cáo độ lệch chuẩn và kết quả trung bình
