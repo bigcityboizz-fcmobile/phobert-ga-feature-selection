@@ -1,0 +1,7 @@
+# Ignore local virtual environments and caches
+__pycache__/
+.venv/
+venv/
+.ipynb_checkpoints/
+.DS_Store
+*.pyc
