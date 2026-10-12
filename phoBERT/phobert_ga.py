@@ -1,4 +1,4 @@
-import argparse
+import argparse  # noqa: I001
 import random
 import time
 from pathlib import Path

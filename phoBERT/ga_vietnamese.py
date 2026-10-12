@@ -6,18 +6,18 @@ from pathlib import Path
 import matplotlib
 
 matplotlib.use("Agg")
-import matplotlib.pyplot as plt  # noqa: E402
-import numpy as np  # noqa: E402
-import pandas as pd  # noqa: E402
-from scipy.sparse import vstack  # noqa: E402
-from sklearn.feature_extraction.text import TfidfVectorizer  # noqa: E402
-from sklearn.metrics import (  # noqa: E402
+import matplotlib.pyplot as plt  # noqa: E402, RUF100
+import numpy as np  # noqa: E402, RUF100
+import pandas as pd  # noqa: E402, RUF100
+from scipy.sparse import vstack  # noqa: E402, RUF100
+from sklearn.feature_extraction.text import TfidfVectorizer  # noqa: E402, RUF100
+from sklearn.metrics import (  # noqa: E402, RUF100
     confusion_matrix,
     precision_recall_fscore_support,
 )
-from sklearn.model_selection import train_test_split  # noqa: E402
-from sklearn.svm import LinearSVC  # noqa: E402
-from underthesea import word_tokenize  # noqa: E402
+from sklearn.model_selection import train_test_split  # noqa: E402, RUF100
+from sklearn.svm import LinearSVC  # noqa: E402, RUF100
+from underthesea import word_tokenize  # noqa: E402, RUF100
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SEED = 42
