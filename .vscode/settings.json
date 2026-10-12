@@ -1,6 +1,8 @@
 {
     "cSpell.words": [
         "Tfidf",
-        "Thời"
+        "Thời",
+        "Vectorizer",
+        "TfidfVectorizer"
     ]
 }
