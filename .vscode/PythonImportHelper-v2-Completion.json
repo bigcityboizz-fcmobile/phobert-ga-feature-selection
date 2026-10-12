@@ -1,0 +1,494 @@
+[
+    {
+        "label": "random",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "random",
+        "description": "random",
+        "detail": "random",
+        "documentation": {}
+    },
+    {
+        "label": "time",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "time",
+        "description": "time",
+        "detail": "time",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "Path",
+        "importPath": "pathlib",
+        "description": "pathlib",
+        "isExtraImport": true,
+        "detail": "pathlib",
+        "documentation": {}
+    },
+    {
+        "label": "matplotlib",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "matplotlib",
+        "description": "matplotlib",
+        "detail": "matplotlib",
+        "documentation": {}
+    },
+    {
+        "label": "matplotlib.pyplot",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "matplotlib.pyplot",
+        "description": "matplotlib.pyplot",
+        "detail": "matplotlib.pyplot",
+        "documentation": {}
+    },
+    {
+        "label": "numpy",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "numpy",
+        "description": "numpy",
+        "detail": "numpy",
+        "documentation": {}
+    },
+    {
+        "label": "pandas",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "pandas",
+        "description": "pandas",
+        "detail": "pandas",
+        "documentation": {}
+    },
+    {
+        "label": "TfidfVectorizer",
+        "importPath": "sklearn.feature_extraction.text",
+        "description": "sklearn.feature_extraction.text",
+        "isExtraImport": true,
+        "detail": "sklearn.feature_extraction.text",
+        "documentation": {}
+    },
+    {
+        "label": "confusion_matrix",
+        "importPath": "sklearn.metrics",
+        "description": "sklearn.metrics",
+        "isExtraImport": true,
+        "detail": "sklearn.metrics",
+        "documentation": {}
+    },
+    {
+        "label": "precision_recall_fscore_support",
+        "importPath": "sklearn.metrics",
+        "description": "sklearn.metrics",
+        "isExtraImport": true,
+        "detail": "sklearn.metrics",
+        "documentation": {}
+    },
+    {
+        "label": "precision_recall_fscore_support",
+        "importPath": "sklearn.metrics",
+        "description": "sklearn.metrics",
+        "isExtraImport": true,
+        "detail": "sklearn.metrics",
+        "documentation": {}
+    },
+    {
+        "label": "train_test_split",
+        "importPath": "sklearn.model_selection",
+        "description": "sklearn.model_selection",
+        "isExtraImport": true,
+        "detail": "sklearn.model_selection",
+        "documentation": {}
+    },
+    {
+        "label": "train_test_split",
+        "importPath": "sklearn.model_selection",
+        "description": "sklearn.model_selection",
+        "isExtraImport": true,
+        "detail": "sklearn.model_selection",
+        "documentation": {}
+    },
+    {
+        "label": "LinearSVC",
+        "importPath": "sklearn.svm",
+        "description": "sklearn.svm",
+        "isExtraImport": true,
+        "detail": "sklearn.svm",
+        "documentation": {}
+    },
+    {
+        "label": "LinearSVC",
+        "importPath": "sklearn.svm",
+        "description": "sklearn.svm",
+        "isExtraImport": true,
+        "detail": "sklearn.svm",
+        "documentation": {}
+    },
+    {
+        "label": "argparse",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "argparse",
+        "description": "argparse",
+        "detail": "argparse",
+        "documentation": {}
+    },
+    {
+        "label": "torch",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "torch",
+        "description": "torch",
+        "detail": "torch",
+        "documentation": {}
+    },
+    {
+        "label": "AutoModel",
+        "importPath": "transformers",
+        "description": "transformers",
+        "isExtraImport": true,
+        "detail": "transformers",
+        "documentation": {}
+    },
+    {
+        "label": "AutoTokenizer",
+        "importPath": "transformers",
+        "description": "transformers",
+        "isExtraImport": true,
+        "detail": "transformers",
+        "documentation": {}
+    },
+    {
+        "label": "set_seed",
+        "kind": 2,
+        "importPath": "phoBERT.ga_vietnamese_demo",
+        "description": "phoBERT.ga_vietnamese_demo",
+        "peekOfCode": "def set_seed(seed=42):\n    random.seed(seed)\n    np.random.seed(seed)\ndef build_dataset():\n    rows = []\n    for label, texts in DATA.items():\n        for text in texts:\n            rows.append({\"text\": text, \"label\": label})\n    return pd.DataFrame(rows)\ndef compute_metrics(y_true, y_pred):",
+        "detail": "phoBERT.ga_vietnamese_demo",
+        "documentation": {}
+    },
+    {
+        "label": "build_dataset",
+        "kind": 2,
+        "importPath": "phoBERT.ga_vietnamese_demo",
+        "description": "phoBERT.ga_vietnamese_demo",
+        "peekOfCode": "def build_dataset():\n    rows = []\n    for label, texts in DATA.items():\n        for text in texts:\n            rows.append({\"text\": text, \"label\": label})\n    return pd.DataFrame(rows)\ndef compute_metrics(y_true, y_pred):\n    precision, recall, f1, _ = precision_recall_fscore_support(\n        y_true, y_pred, average=\"macro\", zero_division=0\n    )",
+        "detail": "phoBERT.ga_vietnamese_demo",
+        "documentation": {}
+    },
+    {
+        "label": "compute_metrics",
+        "kind": 2,
+        "importPath": "phoBERT.ga_vietnamese_demo",
+        "description": "phoBERT.ga_vietnamese_demo",
+        "peekOfCode": "def compute_metrics(y_true, y_pred):\n    precision, recall, f1, _ = precision_recall_fscore_support(\n        y_true, y_pred, average=\"macro\", zero_division=0\n    )\n    return {\n        \"precision\": float(precision),\n        \"recall\": float(recall),\n        \"macro_f1\": float(f1),\n    }\ndef save_results_csv(metrics, path):",
+        "detail": "phoBERT.ga_vietnamese_demo",
+        "documentation": {}
+    },
+    {
+        "label": "save_results_csv",
+        "kind": 2,
+        "importPath": "phoBERT.ga_vietnamese_demo",
+        "description": "phoBERT.ga_vietnamese_demo",
+        "peekOfCode": "def save_results_csv(metrics, path):\n    pd.DataFrame([metrics]).to_csv(path, index=False)\n    return path\ndef plot_confusion_matrix(y_true, y_pred, labels, output_path):\n    cm = confusion_matrix(y_true, y_pred, labels=labels)\n    fig, ax = plt.subplots(figsize=(7, 6))\n    img = ax.imshow(cm, interpolation=\"nearest\", cmap=\"Blues\")\n    ax.set_title(\"Confusion Matrix\")\n    ax.set_xlabel(\"Predicted label\")\n    ax.set_ylabel(\"True label\")",
+        "detail": "phoBERT.ga_vietnamese_demo",
+        "documentation": {}
+    },
+    {
+        "label": "plot_confusion_matrix",
+        "kind": 2,
+        "importPath": "phoBERT.ga_vietnamese_demo",
+        "description": "phoBERT.ga_vietnamese_demo",
+        "peekOfCode": "def plot_confusion_matrix(y_true, y_pred, labels, output_path):\n    cm = confusion_matrix(y_true, y_pred, labels=labels)\n    fig, ax = plt.subplots(figsize=(7, 6))\n    img = ax.imshow(cm, interpolation=\"nearest\", cmap=\"Blues\")\n    ax.set_title(\"Confusion Matrix\")\n    ax.set_xlabel(\"Predicted label\")\n    ax.set_ylabel(\"True label\")\n    ax.set_xticks(range(len(labels)))\n    ax.set_yticks(range(len(labels)))\n    ax.set_xticklabels(labels)",
+        "detail": "phoBERT.ga_vietnamese_demo",
+        "documentation": {}
+    },
+    {
+        "label": "plot_metric_comparison",
+        "kind": 2,
+        "importPath": "phoBERT.ga_vietnamese_demo",
+        "description": "phoBERT.ga_vietnamese_demo",
+        "peekOfCode": "def plot_metric_comparison(baseline_metrics, ga_metrics, output_path):\n    metrics = [\"precision\", \"recall\", \"macro_f1\"]\n    labels = [\"Precision\", \"Recall\", \"Macro-F1\"]\n    baseline_values = [baseline_metrics[name] for name in metrics]\n    ga_values = [ga_metrics[name] for name in metrics]\n    x = np.arange(len(labels))\n    fig, ax = plt.subplots(figsize=(8, 5))\n    width = 0.35\n    ax.bar(x - width / 2, baseline_values, width=width, label=\"Baseline\")\n    ax.bar(x + width / 2, ga_values, width=width, label=\"GA\")",
+        "detail": "phoBERT.ga_vietnamese_demo",
+        "documentation": {}
+    },
+    {
+        "label": "report_error_analysis",
+        "kind": 2,
+        "importPath": "phoBERT.ga_vietnamese_demo",
+        "description": "phoBERT.ga_vietnamese_demo",
+        "peekOfCode": "def report_error_analysis(y_true, y_pred, texts):\n    labels = sorted(set(y_true))\n    cm = confusion_matrix(y_true, y_pred, labels=labels)\n    print(\"\\n=== Confusion Matrix ===\")\n    print(\"Labels:\", labels)\n    print(cm)\n    print(\"\\n=== Các mẫu bị nhầm lẫn ===\")\n    misclassified = []\n    for true_label, pred_label, text in zip(y_true, y_pred, texts):\n        if true_label != pred_label:",
+        "detail": "phoBERT.ga_vietnamese_demo",
+        "documentation": {}
+    },
+    {
+        "label": "create_population",
+        "kind": 2,
+        "importPath": "phoBERT.ga_vietnamese_demo",
+        "description": "phoBERT.ga_vietnamese_demo",
+        "peekOfCode": "def create_population(size, n_features):\n    return np.array(\n        [np.random.randint(0, 2, size=n_features, dtype=np.int8) for _ in range(size)],\n        dtype=np.int8,\n    )\ndef evaluate_chromosome(mask, X_train, y_train, X_test, y_test):\n    selected_idx = np.where(mask == 1)[0]\n    if len(selected_idx) == 0:\n        return {\n            \"fitness\": -1.0,",
+        "detail": "phoBERT.ga_vietnamese_demo",
+        "documentation": {}
+    },
+    {
+        "label": "evaluate_chromosome",
+        "kind": 2,
+        "importPath": "phoBERT.ga_vietnamese_demo",
+        "description": "phoBERT.ga_vietnamese_demo",
+        "peekOfCode": "def evaluate_chromosome(mask, X_train, y_train, X_test, y_test):\n    selected_idx = np.where(mask == 1)[0]\n    if len(selected_idx) == 0:\n        return {\n            \"fitness\": -1.0,\n            \"macro_f1\": 0.0,\n            \"precision\": 0.0,\n            \"recall\": 0.0,\n            \"n_selected\": 0,\n            \"pred\": np.array([y_test[0]] * len(y_test)),",
+        "detail": "phoBERT.ga_vietnamese_demo",
+        "documentation": {}
+    },
+    {
+        "label": "tournament_select",
+        "kind": 2,
+        "importPath": "phoBERT.ga_vietnamese_demo",
+        "description": "phoBERT.ga_vietnamese_demo",
+        "peekOfCode": "def tournament_select(scores, k=2):\n    candidates = random.sample(list(range(len(scores))), k)\n    return max(candidates, key=lambda idx: scores[idx])\ndef uniform_crossover(parent_a, parent_b):\n    mask = np.random.random(len(parent_a)) < 0.5\n    child_a = np.where(mask, parent_a, parent_b).astype(np.int8)\n    child_b = np.where(mask, parent_b, parent_a).astype(np.int8)\n    return child_a, child_b\ndef mutate(chromosome, mutation_rate=0.02):\n    mutated = chromosome.copy()",
+        "detail": "phoBERT.ga_vietnamese_demo",
+        "documentation": {}
+    },
+    {
+        "label": "uniform_crossover",
+        "kind": 2,
+        "importPath": "phoBERT.ga_vietnamese_demo",
+        "description": "phoBERT.ga_vietnamese_demo",
+        "peekOfCode": "def uniform_crossover(parent_a, parent_b):\n    mask = np.random.random(len(parent_a)) < 0.5\n    child_a = np.where(mask, parent_a, parent_b).astype(np.int8)\n    child_b = np.where(mask, parent_b, parent_a).astype(np.int8)\n    return child_a, child_b\ndef mutate(chromosome, mutation_rate=0.02):\n    mutated = chromosome.copy()\n    mutation_mask = np.random.random(len(mutated)) < mutation_rate\n    mutated[mutation_mask] = 1 - mutated[mutation_mask]\n    return mutated.astype(np.int8)",
+        "detail": "phoBERT.ga_vietnamese_demo",
+        "documentation": {}
+    },
+    {
+        "label": "mutate",
+        "kind": 2,
+        "importPath": "phoBERT.ga_vietnamese_demo",
+        "description": "phoBERT.ga_vietnamese_demo",
+        "peekOfCode": "def mutate(chromosome, mutation_rate=0.02):\n    mutated = chromosome.copy()\n    mutation_mask = np.random.random(len(mutated)) < mutation_rate\n    mutated[mutation_mask] = 1 - mutated[mutation_mask]\n    return mutated.astype(np.int8)\ndef genetic_algorithm(\n    X_train,\n    y_train,\n    X_test,\n    y_test,",
+        "detail": "phoBERT.ga_vietnamese_demo",
+        "documentation": {}
+    },
+    {
+        "label": "genetic_algorithm",
+        "kind": 2,
+        "importPath": "phoBERT.ga_vietnamese_demo",
+        "description": "phoBERT.ga_vietnamese_demo",
+        "peekOfCode": "def genetic_algorithm(\n    X_train,\n    y_train,\n    X_test,\n    y_test,\n    pop_size=20,\n    max_generations=25,\n    mutation_rate=0.02,\n    elite_count=2,\n):",
+        "detail": "phoBERT.ga_vietnamese_demo",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "phoBERT.ga_vietnamese_demo",
+        "description": "phoBERT.ga_vietnamese_demo",
+        "peekOfCode": "def main():\n    df = build_dataset()\n    train_df, test_df = train_test_split(\n        df, test_size=0.25, stratify=df[\"label\"], random_state=42\n    )\n    vectorizer = TfidfVectorizer(\n        lowercase=True,\n        ngram_range=(1, 2),\n        min_df=1,\n        max_features=500,",
+        "detail": "phoBERT.ga_vietnamese_demo",
+        "documentation": {}
+    },
+    {
+        "label": "PROJECT_ROOT",
+        "kind": 5,
+        "importPath": "phoBERT.ga_vietnamese_demo",
+        "description": "phoBERT.ga_vietnamese_demo",
+        "peekOfCode": "PROJECT_ROOT = Path(__file__).resolve().parents[1]\nOUTPUT_DIR = PROJECT_ROOT / \"outputs\"\nOUTPUT_DIR.mkdir(exist_ok=True, parents=True)\nDATA = {\n    \"tich_cuc\": [\n        \"chào bạn, mình là Phạm Mạnh Hùng\",\n    ],\n    \"tieu_cuc\": [\n        \"Mày là đồ khùng, ngu dốt\",\n    ],",
+        "detail": "phoBERT.ga_vietnamese_demo",
+        "documentation": {}
+    },
+    {
+        "label": "OUTPUT_DIR",
+        "kind": 5,
+        "importPath": "phoBERT.ga_vietnamese_demo",
+        "description": "phoBERT.ga_vietnamese_demo",
+        "peekOfCode": "OUTPUT_DIR = PROJECT_ROOT / \"outputs\"\nOUTPUT_DIR.mkdir(exist_ok=True, parents=True)\nDATA = {\n    \"tich_cuc\": [\n        \"chào bạn, mình là Phạm Mạnh Hùng\",\n    ],\n    \"tieu_cuc\": [\n        \"Mày là đồ khùng, ngu dốt\",\n    ],\n    \"trung_tinh\": [",
+        "detail": "phoBERT.ga_vietnamese_demo",
+        "documentation": {}
+    },
+    {
+        "label": "DATA",
+        "kind": 5,
+        "importPath": "phoBERT.ga_vietnamese_demo",
+        "description": "phoBERT.ga_vietnamese_demo",
+        "peekOfCode": "DATA = {\n    \"tich_cuc\": [\n        \"chào bạn, mình là Phạm Mạnh Hùng\",\n    ],\n    \"tieu_cuc\": [\n        \"Mày là đồ khùng, ngu dốt\",\n    ],\n    \"trung_tinh\": [\n        \"cũng đc nhma vẫn khùng\",\n    ],",
+        "detail": "phoBERT.ga_vietnamese_demo",
+        "documentation": {}
+    },
+    {
+        "label": "set_seed",
+        "kind": 2,
+        "importPath": "phoBERT.phobert_ga_demo",
+        "description": "phoBERT.phobert_ga_demo",
+        "peekOfCode": "def set_seed(seed=SEED):\n    random.seed(seed)\n    np.random.seed(seed)\n    torch.manual_seed(seed)\n    if torch.cuda.is_available():\n        torch.cuda.manual_seed_all(seed)\ndef load_dataset(path, text_column, label_column):\n    if text_column == label_column:\n        raise ValueError(\"Tên cột văn bản và cột nhãn phải khác nhau.\")\n    df = pd.read_csv(path)",
+        "detail": "phoBERT.phobert_ga_demo",
+        "documentation": {}
+    },
+    {
+        "label": "load_dataset",
+        "kind": 2,
+        "importPath": "phoBERT.phobert_ga_demo",
+        "description": "phoBERT.phobert_ga_demo",
+        "peekOfCode": "def load_dataset(path, text_column, label_column):\n    if text_column == label_column:\n        raise ValueError(\"Tên cột văn bản và cột nhãn phải khác nhau.\")\n    df = pd.read_csv(path)\n    missing_columns = {text_column, label_column} - set(df.columns)\n    if missing_columns:\n        raise ValueError(\n            f\"CSV thiếu cột bắt buộc: {', '.join(sorted(missing_columns))}\"\n        )\n    if df.empty:",
+        "detail": "phoBERT.phobert_ga_demo",
+        "documentation": {}
+    },
+    {
+        "label": "split_dataset",
+        "kind": 2,
+        "importPath": "phoBERT.phobert_ga_demo",
+        "description": "phoBERT.phobert_ga_demo",
+        "peekOfCode": "def split_dataset(df, seed=SEED):\n    counts = df[\"label\"].value_counts()\n    too_small = counts[counts < 10]\n    if not too_small.empty:\n        details = \", \".join(f\"{label}: {count}\" for label, count in too_small.items())\n        raise ValueError(\n            \"Cần ít nhất 10 mẫu cho mỗi lớp để chia train/validation/test có \"\n            f\"phân tầng. Số mẫu hiện tại: {details}\"\n        )\n    train_df, holdout_df = train_test_split(",
+        "detail": "phoBERT.phobert_ga_demo",
+        "documentation": {}
+    },
+    {
+        "label": "compute_metrics",
+        "kind": 2,
+        "importPath": "phoBERT.phobert_ga_demo",
+        "description": "phoBERT.phobert_ga_demo",
+        "peekOfCode": "def compute_metrics(y_true, y_pred):\n    precision, recall, f1, _ = precision_recall_fscore_support(\n        y_true, y_pred, average=\"macro\", zero_division=0\n    )\n    return {\n        \"precision\": float(precision),\n        \"recall\": float(recall),\n        \"macro_f1\": float(f1),\n    }\ndef report_error_analysis(y_true, y_pred, texts):",
+        "detail": "phoBERT.phobert_ga_demo",
+        "documentation": {}
+    },
+    {
+        "label": "report_error_analysis",
+        "kind": 2,
+        "importPath": "phoBERT.phobert_ga_demo",
+        "description": "phoBERT.phobert_ga_demo",
+        "peekOfCode": "def report_error_analysis(y_true, y_pred, texts):\n    print(\"\\n=== Các mẫu bị nhầm lẫn trên test ===\")\n    misclassified = [\n        (true_label, pred_label, text)\n        for true_label, pred_label, text in zip(y_true, y_pred, texts)\n        if true_label != pred_label\n    ]\n    if not misclassified:\n        print(\"Không có trường hợp nào bị nhầm lẫn trên tập kiểm thử.\")\n        return",
+        "detail": "phoBERT.phobert_ga_demo",
+        "documentation": {}
+    },
+    {
+        "label": "mean_pooling",
+        "kind": 2,
+        "importPath": "phoBERT.phobert_ga_demo",
+        "description": "phoBERT.phobert_ga_demo",
+        "peekOfCode": "def mean_pooling(last_hidden_state, attention_mask):\n    mask = attention_mask.unsqueeze(-1).to(dtype=last_hidden_state.dtype)\n    summed = (last_hidden_state * mask).sum(dim=1)\n    counts = mask.sum(dim=1).clamp(min=1)\n    return summed / counts\ndef extract_phobert_embeddings(\n    texts, tokenizer, model, device, batch_size=16, max_length=128\n):\n    embeddings = []\n    model.eval()",
+        "detail": "phoBERT.phobert_ga_demo",
+        "documentation": {}
+    },
+    {
+        "label": "extract_phobert_embeddings",
+        "kind": 2,
+        "importPath": "phoBERT.phobert_ga_demo",
+        "description": "phoBERT.phobert_ga_demo",
+        "peekOfCode": "def extract_phobert_embeddings(\n    texts, tokenizer, model, device, batch_size=16, max_length=128\n):\n    embeddings = []\n    model.eval()\n    with torch.inference_mode():\n        for start in range(0, len(texts), batch_size):\n            batch = texts[start : start + batch_size]\n            inputs = tokenizer(\n                batch,",
+        "detail": "phoBERT.phobert_ga_demo",
+        "documentation": {}
+    },
+    {
+        "label": "create_population",
+        "kind": 2,
+        "importPath": "phoBERT.phobert_ga_demo",
+        "description": "phoBERT.phobert_ga_demo",
+        "peekOfCode": "def create_population(size, n_features):\n    if size < 2:\n        raise ValueError(\"Kích thước quần thể GA phải từ 2 trở lên.\")\n    if n_features < 1:\n        raise ValueError(\"Không có đặc trưng để GA lựa chọn.\")\n    return np.random.randint(0, 2, size=(size, n_features), dtype=np.int8)\ndef evaluate_mask(mask, X_train, y_train, X_validation, y_validation):\n    selected_idx = np.flatnonzero(mask)\n    if selected_idx.size == 0:\n        return {\"fitness\": -1.0, \"macro_f1\": 0.0, \"n_selected\": 0}",
+        "detail": "phoBERT.phobert_ga_demo",
+        "documentation": {}
+    },
+    {
+        "label": "evaluate_mask",
+        "kind": 2,
+        "importPath": "phoBERT.phobert_ga_demo",
+        "description": "phoBERT.phobert_ga_demo",
+        "peekOfCode": "def evaluate_mask(mask, X_train, y_train, X_validation, y_validation):\n    selected_idx = np.flatnonzero(mask)\n    if selected_idx.size == 0:\n        return {\"fitness\": -1.0, \"macro_f1\": 0.0, \"n_selected\": 0}\n    model = LinearSVC(C=1.0, random_state=SEED)\n    model.fit(X_train[:, selected_idx], y_train)\n    pred = model.predict(X_validation[:, selected_idx])\n    metrics = compute_metrics(y_validation, pred)\n    selected_ratio = selected_idx.size / X_train.shape[1]\n    return {",
+        "detail": "phoBERT.phobert_ga_demo",
+        "documentation": {}
+    },
+    {
+        "label": "tournament_select",
+        "kind": 2,
+        "importPath": "phoBERT.phobert_ga_demo",
+        "description": "phoBERT.phobert_ga_demo",
+        "peekOfCode": "def tournament_select(scores, k=2):\n    candidates = random.sample(range(len(scores)), k)\n    return max(candidates, key=lambda idx: scores[idx])\ndef uniform_crossover(parent_a, parent_b):\n    mask = np.random.random(len(parent_a)) < 0.5\n    child_a = np.where(mask, parent_a, parent_b).astype(np.int8)\n    child_b = np.where(mask, parent_b, parent_a).astype(np.int8)\n    return child_a, child_b\ndef mutate(chromosome, mutation_rate=0.02):\n    mutated = chromosome.copy()",
+        "detail": "phoBERT.phobert_ga_demo",
+        "documentation": {}
+    },
+    {
+        "label": "uniform_crossover",
+        "kind": 2,
+        "importPath": "phoBERT.phobert_ga_demo",
+        "description": "phoBERT.phobert_ga_demo",
+        "peekOfCode": "def uniform_crossover(parent_a, parent_b):\n    mask = np.random.random(len(parent_a)) < 0.5\n    child_a = np.where(mask, parent_a, parent_b).astype(np.int8)\n    child_b = np.where(mask, parent_b, parent_a).astype(np.int8)\n    return child_a, child_b\ndef mutate(chromosome, mutation_rate=0.02):\n    mutated = chromosome.copy()\n    mutation_mask = np.random.random(len(mutated)) < mutation_rate\n    mutated[mutation_mask] = 1 - mutated[mutation_mask]\n    return mutated",
+        "detail": "phoBERT.phobert_ga_demo",
+        "documentation": {}
+    },
+    {
+        "label": "mutate",
+        "kind": 2,
+        "importPath": "phoBERT.phobert_ga_demo",
+        "description": "phoBERT.phobert_ga_demo",
+        "peekOfCode": "def mutate(chromosome, mutation_rate=0.02):\n    mutated = chromosome.copy()\n    mutation_mask = np.random.random(len(mutated)) < mutation_rate\n    mutated[mutation_mask] = 1 - mutated[mutation_mask]\n    return mutated\ndef genetic_algorithm(\n    X_train,\n    y_train,\n    X_validation,\n    y_validation,",
+        "detail": "phoBERT.phobert_ga_demo",
+        "documentation": {}
+    },
+    {
+        "label": "genetic_algorithm",
+        "kind": 2,
+        "importPath": "phoBERT.phobert_ga_demo",
+        "description": "phoBERT.phobert_ga_demo",
+        "peekOfCode": "def genetic_algorithm(\n    X_train,\n    y_train,\n    X_validation,\n    y_validation,\n    pop_size=20,\n    max_generations=25,\n    mutation_rate=0.02,\n):\n    if max_generations < 1:",
+        "detail": "phoBERT.phobert_ga_demo",
+        "documentation": {}
+    },
+    {
+        "label": "print_metrics",
+        "kind": 2,
+        "importPath": "phoBERT.phobert_ga_demo",
+        "description": "phoBERT.phobert_ga_demo",
+        "peekOfCode": "def print_metrics(title, metrics):\n    print(f\"\\n=== {title} ===\")\n    print(f\"Precision macro: {metrics['precision']:.4f}\")\n    print(f\"Recall macro: {metrics['recall']:.4f}\")\n    print(f\"Macro-F1: {metrics['macro_f1']:.4f}\")\ndef parse_args():\n    parser = argparse.ArgumentParser(\n        description=(\n            \"Phát hiện phát ngôn thù ghét tiếng Việt bằng PhoBERT và GA chọn \"\n            \"chiều embedding.\"",
+        "detail": "phoBERT.phobert_ga_demo",
+        "documentation": {}
+    },
+    {
+        "label": "parse_args",
+        "kind": 2,
+        "importPath": "phoBERT.phobert_ga_demo",
+        "description": "phoBERT.phobert_ga_demo",
+        "peekOfCode": "def parse_args():\n    parser = argparse.ArgumentParser(\n        description=(\n            \"Phát hiện phát ngôn thù ghét tiếng Việt bằng PhoBERT và GA chọn \"\n            \"chiều embedding.\"\n        )\n    )\n    parser.add_argument(\"csv_path\", type=Path, help=\"CSV có cột văn bản và nhãn.\")\n    parser.add_argument(\"--text-column\", default=\"text\", help=\"Tên cột văn bản.\")\n    parser.add_argument(\"--label-column\", default=\"label\", help=\"Tên cột nhãn.\")",
+        "detail": "phoBERT.phobert_ga_demo",
+        "documentation": {}
+    },
+    {
+        "label": "main",
+        "kind": 2,
+        "importPath": "phoBERT.phobert_ga_demo",
+        "description": "phoBERT.phobert_ga_demo",
+        "peekOfCode": "def main():\n    args = parse_args()\n    set_seed()\n    df = load_dataset(args.csv_path, args.text_column, args.label_column)\n    train_df, validation_df, test_df = split_dataset(df)\n    print(\n        \"Số mẫu: \"\n        f\"train={len(train_df)}, validation={len(validation_df)}, test={len(test_df)}\"\n    )\n    print(",
+        "detail": "phoBERT.phobert_ga_demo",
+        "documentation": {}
+    },
+    {
+        "label": "PROJECT_ROOT",
+        "kind": 5,
+        "importPath": "phoBERT.phobert_ga_demo",
+        "description": "phoBERT.phobert_ga_demo",
+        "peekOfCode": "PROJECT_ROOT = Path(__file__).resolve().parents[1]\nSEED = 42\nFEATURE_PENALTY = 0.1\ndef set_seed(seed=SEED):\n    random.seed(seed)\n    np.random.seed(seed)\n    torch.manual_seed(seed)\n    if torch.cuda.is_available():\n        torch.cuda.manual_seed_all(seed)\ndef load_dataset(path, text_column, label_column):",
+        "detail": "phoBERT.phobert_ga_demo",
+        "documentation": {}
+    },
+    {
+        "label": "SEED",
+        "kind": 5,
+        "importPath": "phoBERT.phobert_ga_demo",
+        "description": "phoBERT.phobert_ga_demo",
+        "peekOfCode": "SEED = 42\nFEATURE_PENALTY = 0.1\ndef set_seed(seed=SEED):\n    random.seed(seed)\n    np.random.seed(seed)\n    torch.manual_seed(seed)\n    if torch.cuda.is_available():\n        torch.cuda.manual_seed_all(seed)\ndef load_dataset(path, text_column, label_column):\n    if text_column == label_column:",
+        "detail": "phoBERT.phobert_ga_demo",
+        "documentation": {}
+    },
+    {
+        "label": "FEATURE_PENALTY",
+        "kind": 5,
+        "importPath": "phoBERT.phobert_ga_demo",
+        "description": "phoBERT.phobert_ga_demo",
+        "peekOfCode": "FEATURE_PENALTY = 0.1\ndef set_seed(seed=SEED):\n    random.seed(seed)\n    np.random.seed(seed)\n    torch.manual_seed(seed)\n    if torch.cuda.is_available():\n        torch.cuda.manual_seed_all(seed)\ndef load_dataset(path, text_column, label_column):\n    if text_column == label_column:\n        raise ValueError(\"Tên cột văn bản và cột nhãn phải khác nhau.\")",
+        "detail": "phoBERT.phobert_ga_demo",
+        "documentation": {}
+    }
+]
