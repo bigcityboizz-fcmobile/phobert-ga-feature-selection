@@ -14,6 +14,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import confusion_matrix, precision_recall_fscore_support
 from sklearn.model_selection import train_test_split
 from sklearn.svm import LinearSVC
+from underthesea import word_tokenize
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -80,6 +81,10 @@ def split_dataset(df, seed=SEED):
         random_state=seed,
     )
     return train_df, validation_df, test_df
+
+
+def vietnamese_tokenizer(text):
+    return word_tokenize(text, format="text").split()
 
 
 def compute_metrics(y_true, y_pred):
@@ -321,6 +326,8 @@ def main(argv=None):
 
     vectorizer = TfidfVectorizer(
         lowercase=True,
+        tokenizer=vietnamese_tokenizer,
+        token_pattern=None,
         ngram_range=(1, 2),
         min_df=1,
         max_features=args.max_features,

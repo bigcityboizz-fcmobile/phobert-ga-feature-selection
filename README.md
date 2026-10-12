@@ -46,4 +46,4 @@ python phoBERT/ga_vietnamese.py data/vietnamese_hate_speech.csv \
   --label-column label
 ```
 
-Pipeline TF-IDF cũng yêu cầu ít nhất 10 mẫu mỗi lớp, chọn đặc trưng trên validation, rồi chỉ đánh giá trên test ở bước cuối. Kết quả được lưu trong `outputs/tfidf_ga/`.
+Pipeline TF-IDF cũng dùng Underthesea để tách từ tiếng Việt, yêu cầu ít nhất 10 mẫu mỗi lớp, chọn đặc trưng trên validation, rồi chỉ đánh giá trên test ở bước cuối. Kết quả được lưu trong `outputs/tfidf_ga/`.

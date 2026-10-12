@@ -151,12 +151,11 @@
         "documentation": {}
     },
     {
-        "label": "torch",
-        "kind": 6,
+        "label": "word_tokenize",
+        "importPath": "underthesea",
+        "description": "underthesea",
         "isExtraImport": true,
-        "importPath": "torch",
-        "description": "torch",
-        "detail": "torch",
+        "detail": "underthesea",
         "documentation": {}
     },
     {
@@ -165,6 +164,15 @@
         "description": "underthesea",
         "isExtraImport": true,
         "detail": "underthesea",
+        "documentation": {}
+    },
+    {
+        "label": "torch",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "torch",
+        "description": "torch",
+        "detail": "torch",
         "documentation": {}
     },
     {
@@ -207,6 +215,15 @@
         "importPath": "phoBERT.ga_vietnamese",
         "description": "phoBERT.ga_vietnamese",
         "peekOfCode": "def split_dataset(df, seed=SEED):\n    counts = df[\"label\"].value_counts()\n    too_small = counts[counts < 10]\n    if not too_small.empty:\n        details = \", \".join(f\"{label}: {count}\" for label, count in too_small.items())\n        raise ValueError(\n            \"Cần ít nhất 10 mẫu cho mỗi lớp để chia train/validation/test có \"\n            f\"phân tầng. Số mẫu hiện tại: {details}\"\n        )\n    train_df, holdout_df = train_test_split(",
+        "detail": "phoBERT.ga_vietnamese",
+        "documentation": {}
+    },
+    {
+        "label": "vietnamese_tokenizer",
+        "kind": 2,
+        "importPath": "phoBERT.ga_vietnamese",
+        "description": "phoBERT.ga_vietnamese",
+        "peekOfCode": "def vietnamese_tokenizer(text):\n    return word_tokenize(text, format=\"text\").split()\ndef compute_metrics(y_true, y_pred):\n    precision, recall, f1, _ = precision_recall_fscore_support(\n        y_true, y_pred, average=\"macro\", zero_division=0\n    )\n    return {\n        \"precision\": float(precision),\n        \"recall\": float(recall),\n        \"macro_f1\": float(f1),",
         "detail": "phoBERT.ga_vietnamese",
         "documentation": {}
     },
@@ -332,7 +349,7 @@
         "kind": 2,
         "importPath": "phoBERT.ga_vietnamese",
         "description": "phoBERT.ga_vietnamese",
-        "peekOfCode": "def main(argv=None):\n    args = parse_args(argv)\n    set_seed()\n    df = load_dataset(args.csv_path, args.text_column, args.label_column)\n    train_df, validation_df, test_df = split_dataset(df)\n    vectorizer = TfidfVectorizer(\n        lowercase=True,\n        ngram_range=(1, 2),\n        min_df=1,\n        max_features=args.max_features,",
+        "peekOfCode": "def main(argv=None):\n    args = parse_args(argv)\n    set_seed()\n    df = load_dataset(args.csv_path, args.text_column, args.label_column)\n    train_df, validation_df, test_df = split_dataset(df)\n    vectorizer = TfidfVectorizer(\n        lowercase=True,\n        tokenizer=vietnamese_tokenizer,\n        token_pattern=None,\n        ngram_range=(1, 2),",
         "detail": "phoBERT.ga_vietnamese",
         "documentation": {}
     },
