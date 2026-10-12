@@ -1,0 +1,2 @@
+baseline_precision,baseline_recall,baseline_macro_f1,ga_precision,ga_recall,ga_macro_f1,selected_features,total_features,ga_time_seconds,baseline_time_seconds
+0.6793650793650793,0.6666666666666666,0.6555555555555556,1.0,1.0,1.0,160,342,3.076340913772583,0.01007390022277832

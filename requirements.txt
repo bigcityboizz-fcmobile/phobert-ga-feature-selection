@@ -4,3 +4,4 @@ scikit-learn>=1.4
 transformers>=4.42
 torch>=2.2
 sentencepiece>=0.2
+matplotlib>=3.8

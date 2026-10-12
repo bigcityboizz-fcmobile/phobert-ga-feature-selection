@@ -1,14 +1,22 @@
 import random
 import time
-from collections import Counter
+from pathlib import Path
 
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics import precision_recall_fscore_support, confusion_matrix
+from sklearn.metrics import confusion_matrix, precision_recall_fscore_support
 from sklearn.model_selection import train_test_split
 from sklearn.svm import LinearSVC
 
+
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+OUTPUT_DIR = PROJECT_ROOT / "outputs"
+OUTPUT_DIR.mkdir(exist_ok=True, parents=True)
 
 DATA = {
     "tich_cuc": [
@@ -80,6 +88,11 @@ DATA = {
 }
 
 
+def set_seed(seed=42):
+    random.seed(seed)
+    np.random.seed(seed)
+
+
 def build_dataset():
     rows = []
     for label, texts in DATA.items():
@@ -97,6 +110,61 @@ def compute_metrics(y_true, y_pred):
         "recall": float(recall),
         "macro_f1": float(f1),
     }
+
+
+def save_results_csv(metrics, path):
+    pd.DataFrame([metrics]).to_csv(path, index=False)
+    return path
+
+
+def plot_confusion_matrix(y_true, y_pred, labels, output_path):
+    cm = confusion_matrix(y_true, y_pred, labels=labels)
+    fig, ax = plt.subplots(figsize=(7, 6))
+    img = ax.imshow(cm, interpolation="nearest", cmap="Blues")
+    ax.set_title("Confusion Matrix")
+    ax.set_xlabel("Predicted label")
+    ax.set_ylabel("True label")
+    ax.set_xticks(range(len(labels)))
+    ax.set_yticks(range(len(labels)))
+    ax.set_xticklabels(labels)
+    ax.set_yticklabels(labels)
+
+    for i in range(len(labels)):
+        for j in range(len(labels)):
+            ax.text(
+                j,
+                i,
+                format(cm[i, j], "d"),
+                ha="center",
+                va="center",
+                color="white" if cm[i, j] > cm.max() / 2 else "black",
+            )
+
+    fig.colorbar(img, ax=ax)
+    fig.tight_layout()
+    fig.savefig(output_path, dpi=200, bbox_inches="tight")
+    plt.close(fig)
+
+
+def plot_metric_comparison(baseline_metrics, ga_metrics, output_path):
+    metrics = ["precision", "recall", "macro_f1"]
+    labels = ["Precision", "Recall", "Macro-F1"]
+    baseline_values = [baseline_metrics[name] for name in metrics]
+    ga_values = [ga_metrics[name] for name in metrics]
+
+    x = np.arange(len(labels))
+    fig, ax = plt.subplots(figsize=(8, 5))
+    width = 0.35
+    ax.bar(x - width / 2, baseline_values, width=width, label="Baseline")
+    ax.bar(x + width / 2, ga_values, width=width, label="GA")
+    ax.set_xticks(x)
+    ax.set_xticklabels(labels)
+    ax.set_ylim(0, 1.05)
+    ax.set_title("Baseline vs GA classifier metrics")
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig(output_path, dpi=200, bbox_inches="tight")
+    plt.close(fig)
 
 
 def report_error_analysis(y_true, y_pred, texts):
@@ -118,10 +186,6 @@ def report_error_analysis(y_true, y_pred, texts):
 
     for true_label, pred_label, text in misclassified[:10]:
         print(f"- Đúng: {true_label} | Dự đoán: {pred_label} | Văn bản: '{text}'")
-
-
-def sigmoid(x):
-    return 1 / (1 + np.exp(-x))
 
 
 def create_population(size, n_features):
@@ -169,8 +233,7 @@ def evaluate_chromosome(mask, X_train, y_train, X_test, y_test):
 
 def tournament_select(scores, k=2):
     candidates = random.sample(list(range(len(scores))), k)
-    best_idx = max(candidates, key=lambda idx: scores[idx])
-    return best_idx
+    return max(candidates, key=lambda idx: scores[idx])
 
 
 def uniform_crossover(parent_a, parent_b):
@@ -187,10 +250,17 @@ def mutate(chromosome, mutation_rate=0.02):
     return mutated.astype(np.int8)
 
 
-def genetic_algorithm(X_train, y_train, X_test, y_test, pop_size=20, max_generations=25, mutation_rate=0.02):
-    random.seed(42)
-    np.random.seed(42)
-
+def genetic_algorithm(
+    X_train,
+    y_train,
+    X_test,
+    y_test,
+    pop_size=20,
+    max_generations=25,
+    mutation_rate=0.02,
+    elite_count=2,
+):
+    set_seed(42)
     population = create_population(pop_size, X_train.shape[1])
     best_mask = None
     best_score = -np.inf
@@ -203,8 +273,8 @@ def genetic_algorithm(X_train, y_train, X_test, y_test, pop_size=20, max_generat
             result = evaluate_chromosome(chrom, X_train, y_train, X_test, y_test)
             evaluated.append((chrom, result))
 
-        current_best = max(evaluated, key=lambda x: x[1]["fitness"])
-        current_mask, current_result = current_best
+        ranked = sorted(evaluated, key=lambda item: item[1]["fitness"], reverse=True)
+        current_mask, current_result = ranked[0]
 
         if current_result["fitness"] > best_score:
             best_score = current_result["fitness"]
@@ -217,8 +287,9 @@ def genetic_algorithm(X_train, y_train, X_test, y_test, pop_size=20, max_generat
         if no_improve >= 8:
             break
 
-        scores = [item[1]["fitness"] for item in evaluated]
-        offspring = []
+        scores = [item[1]["fitness"] for item in ranked]
+        offspring = [chrom.copy() for chrom, _ in ranked[:elite_count]]
+
         while len(offspring) < pop_size:
             idx_a = tournament_select(scores)
             idx_b = tournament_select(scores)
@@ -296,6 +367,23 @@ def main():
     ga_pred = ga_model.predict(X_test_selected)
     ga_metrics = compute_metrics(y_test, ga_pred)
 
+    summary = {
+        "baseline_precision": baseline_metrics["precision"],
+        "baseline_recall": baseline_metrics["recall"],
+        "baseline_macro_f1": baseline_metrics["macro_f1"],
+        "ga_precision": ga_metrics["precision"],
+        "ga_recall": ga_metrics["recall"],
+        "ga_macro_f1": ga_metrics["macro_f1"],
+        "selected_features": len(selected_idx),
+        "total_features": X_train_tfidf.shape[1],
+        "ga_time_seconds": ga_time,
+        "baseline_time_seconds": baseline_time,
+    }
+
+    save_results_csv(summary, OUTPUT_DIR / "ga_results.csv")
+    plot_confusion_matrix(y_test, ga_pred, sorted(set(y_test)), OUTPUT_DIR / "confusion_matrix.png")
+    plot_metric_comparison(baseline_metrics, ga_metrics, OUTPUT_DIR / "metric_comparison.png")
+
     print("\n=== Sau GA: TF-IDF + SVM với chọn đặc trưng ===")
     print(f"Precision: {ga_metrics['precision']:.4f}")
     print(f"Recall: {ga_metrics['recall']:.4f}")
@@ -308,6 +396,7 @@ def main():
     print("\n=== So sánh trước/sau GA ===")
     print(f"Macro-F1 tăng: {delta:.4f}")
     print(f"Giảm đặc trưng: {reduction * 100:.2f}%")
+    print(f"Đã lưu kết quả tại: {OUTPUT_DIR}")
 
     print("\n=== Phân tích lỗi ===")
     report_error_analysis(y_test, ga_pred, X_test_raw)

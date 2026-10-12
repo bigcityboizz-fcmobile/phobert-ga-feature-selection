@@ -34,10 +34,16 @@ pip install -r requirements.txt
 ## 4. Chạy demo
 
 ```bash
-python demo/phobert_ga_demo.py
+python demo/ga_vietnamese_demo.py
 ```
 
 Lưu ý: mô hình `vinai/phobert-base` sẽ được tải tự động từ Hugging Face. Nếu môi trường không có GPU, demo vẫn chạy trên CPU nhưng thời gian sẽ dài hơn.
+
+Sau khi chạy, script sẽ tự động lưu:
+
+- `outputs/ga_results.csv`
+- `outputs/confusion_matrix.png`
+- `outputs/metric_comparison.png`
 
 ## 5. Kết quả mong đợi
 
