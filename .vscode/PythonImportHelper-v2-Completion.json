@@ -223,7 +223,7 @@
         "kind": 2,
         "importPath": "phoBERT.ga_vietnamese",
         "description": "phoBERT.ga_vietnamese",
-        "peekOfCode": "def vietnamese_tokenizer(text):\n    return word_tokenize(text, format=\"text\").split()\ndef compute_metrics(y_true, y_pred):\n    precision, recall, f1, _ = precision_recall_fscore_support(\n        y_true, y_pred, average=\"macro\", zero_division=0\n    )\n    return {\n        \"precision\": float(precision),\n        \"recall\": float(recall),\n        \"macro_f1\": float(f1),",
+        "peekOfCode": "def vietnamese_tokenizer(text: str) -> list[str]:\n    tokens = word_tokenize(text, format=\"text\").split()\n    return [token.lower() for token in tokens]\ndef compute_metrics(y_true, y_pred):\n    precision, recall, f1, _ = precision_recall_fscore_support(\n        y_true, y_pred, average=\"macro\", zero_division=0\n    )\n    return {\n        \"precision\": float(precision),\n        \"recall\": float(recall),",
         "detail": "phoBERT.ga_vietnamese",
         "documentation": {}
     },
@@ -241,7 +241,7 @@
         "kind": 2,
         "importPath": "phoBERT.ga_vietnamese",
         "description": "phoBERT.ga_vietnamese",
-        "peekOfCode": "def print_metrics(title, metrics):\n    print(f\"\\n=== {title} ===\")\n    print(f\"Precision macro: {metrics['precision']:.4f}\")\n    print(f\"Recall macro: {metrics['recall']:.4f}\")\n    print(f\"Macro-F1: {metrics['macro_f1']:.4f}\")\ndef save_results_csv(metrics, path):\n    pd.DataFrame([metrics]).to_csv(path, index=False)\n    return path\ndef plot_confusion_matrix(y_true, y_pred, labels, output_path):\n    cm = confusion_matrix(y_true, y_pred, labels=labels)",
+        "peekOfCode": "def print_metrics(title, metrics):\n    print(f\"\\n=== {title} ===\")\n    print(f\"Precision macro: {metrics['precision']:.4f}\")\n    print(f\"Recall macro: {metrics['recall']:.4f}\")\n    print(f\"Macro-F1: {metrics['macro_f1']:.4f}\")\ndef save_results_csv(metrics, path):\n    pd.DataFrame([metrics]).to_csv(path, index=False)\ndef plot_confusion_matrix(y_true, y_pred, labels, output_path):\n    cm = confusion_matrix(y_true, y_pred, labels=labels)\n    fig, ax = plt.subplots(figsize=(7, 6))",
         "detail": "phoBERT.ga_vietnamese",
         "documentation": {}
     },
@@ -250,7 +250,7 @@
         "kind": 2,
         "importPath": "phoBERT.ga_vietnamese",
         "description": "phoBERT.ga_vietnamese",
-        "peekOfCode": "def save_results_csv(metrics, path):\n    pd.DataFrame([metrics]).to_csv(path, index=False)\n    return path\ndef plot_confusion_matrix(y_true, y_pred, labels, output_path):\n    cm = confusion_matrix(y_true, y_pred, labels=labels)\n    fig, ax = plt.subplots(figsize=(7, 6))\n    img = ax.imshow(cm, interpolation=\"nearest\", cmap=\"Blues\")\n    ax.set_title(\"Confusion Matrix\")\n    ax.set_xlabel(\"Predicted label\")\n    ax.set_ylabel(\"True label\")",
+        "peekOfCode": "def save_results_csv(metrics, path):\n    pd.DataFrame([metrics]).to_csv(path, index=False)\ndef plot_confusion_matrix(y_true, y_pred, labels, output_path):\n    cm = confusion_matrix(y_true, y_pred, labels=labels)\n    fig, ax = plt.subplots(figsize=(7, 6))\n    img = ax.imshow(cm, interpolation=\"nearest\", cmap=\"Blues\")\n    ax.set_title(\"Confusion Matrix\")\n    ax.set_xlabel(\"Predicted label\")\n    ax.set_ylabel(\"True label\")\n    ax.set_xticks(range(len(labels)))",
         "detail": "phoBERT.ga_vietnamese",
         "documentation": {}
     },
@@ -286,7 +286,7 @@
         "kind": 2,
         "importPath": "phoBERT.ga_vietnamese",
         "description": "phoBERT.ga_vietnamese",
-        "peekOfCode": "def create_population(size, n_features):\n    if size < 2:\n        raise ValueError(\"Kích thước quần thể GA phải từ 2 trở lên.\")\n    if n_features < 1:\n        raise ValueError(\"Không có đặc trưng để GA lựa chọn.\")\n    return np.random.randint(0, 2, size=(size, n_features), dtype=np.int8)\ndef evaluate_chromosome(mask, X_train, y_train, X_validation, y_validation):\n    selected_idx = np.flatnonzero(mask)\n    if selected_idx.size == 0:\n        return {\"fitness\": -1.0, \"macro_f1\": 0.0, \"n_selected\": 0}",
+        "peekOfCode": "def create_population(size, n_features):\n    if size < 2:\n        raise ValueError(\"Kích thước quần thể GA phải từ 2 trở lên.\")\n    if n_features < 1:\n        raise ValueError(\"Không có đặc trưng để GA lựa chọn.\")\n    population = np.random.randint(0, 2, size=(size, n_features), dtype=np.int8)\n    population[0] = 1\n    return population\ndef evaluate_chromosome(mask, X_train, y_train, X_validation, y_validation):\n    selected_idx = np.flatnonzero(mask)",
         "detail": "phoBERT.ga_vietnamese",
         "documentation": {}
     },
@@ -304,7 +304,7 @@
         "kind": 2,
         "importPath": "phoBERT.ga_vietnamese",
         "description": "phoBERT.ga_vietnamese",
-        "peekOfCode": "def tournament_select(scores, k=2):\n    candidates = random.sample(list(range(len(scores))), k)\n    return max(candidates, key=lambda idx: scores[idx])\ndef uniform_crossover(parent_a, parent_b):\n    mask = np.random.random(len(parent_a)) < 0.5\n    child_a = np.where(mask, parent_a, parent_b).astype(np.int8)\n    child_b = np.where(mask, parent_b, parent_a).astype(np.int8)\n    return child_a, child_b\ndef mutate(chromosome, mutation_rate=0.02):\n    mutated = chromosome.copy()",
+        "peekOfCode": "def tournament_select(scores, k=2):\n    candidates = random.sample(range(len(scores)), k)\n    return max(candidates, key=lambda idx: scores[idx])\ndef uniform_crossover(parent_a, parent_b):\n    mask = np.random.random(len(parent_a)) < 0.5\n    child_a = np.where(mask, parent_a, parent_b).astype(np.int8)\n    child_b = np.where(mask, parent_b, parent_a).astype(np.int8)\n    return child_a, child_b\ndef mutate(chromosome, mutation_rate=0.02):\n    mutated = chromosome.copy()",
         "detail": "phoBERT.ga_vietnamese",
         "documentation": {}
     },
@@ -349,7 +349,7 @@
         "kind": 2,
         "importPath": "phoBERT.ga_vietnamese",
         "description": "phoBERT.ga_vietnamese",
-        "peekOfCode": "def main(argv=None):\n    args = parse_args(argv)\n    set_seed()\n    df = load_dataset(args.csv_path, args.text_column, args.label_column)\n    train_df, validation_df, test_df = split_dataset(df)\n    vectorizer = TfidfVectorizer(\n        lowercase=True,\n        tokenizer=vietnamese_tokenizer,\n        token_pattern=None,\n        ngram_range=(1, 2),",
+        "peekOfCode": "def main(argv=None):\n    args = parse_args(argv)\n    df = load_dataset(args.csv_path, args.text_column, args.label_column)\n    train_df, validation_df, test_df = split_dataset(df)\n    vectorizer = TfidfVectorizer(\n        lowercase=False,\n        tokenizer=vietnamese_tokenizer,\n        token_pattern=None,\n        ngram_range=(1, 2),\n        min_df=1,",
         "detail": "phoBERT.ga_vietnamese",
         "documentation": {}
     },

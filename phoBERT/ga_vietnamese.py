@@ -83,8 +83,9 @@ def split_dataset(df, seed=SEED):
     return train_df, validation_df, test_df
 
 
-def vietnamese_tokenizer(text):
-    return word_tokenize(text, format="text").split()
+def vietnamese_tokenizer(text: str) -> list[str]:
+    tokens = word_tokenize(text, format="text").split()
+    return [token.lower() for token in tokens]
 
 
 def compute_metrics(y_true, y_pred):
@@ -107,7 +108,6 @@ def print_metrics(title, metrics):
 
 def save_results_csv(metrics, path):
     pd.DataFrame([metrics]).to_csv(path, index=False)
-    return path
 
 
 def plot_confusion_matrix(y_true, y_pred, labels, output_path):
@@ -186,7 +186,9 @@ def create_population(size, n_features):
         raise ValueError("Kích thước quần thể GA phải từ 2 trở lên.")
     if n_features < 1:
         raise ValueError("Không có đặc trưng để GA lựa chọn.")
-    return np.random.randint(0, 2, size=(size, n_features), dtype=np.int8)
+    population = np.random.randint(0, 2, size=(size, n_features), dtype=np.int8)
+    population[0] = 1
+    return population
 
 
 def evaluate_chromosome(mask, X_train, y_train, X_validation, y_validation):
@@ -213,7 +215,7 @@ def evaluate_chromosome(mask, X_train, y_train, X_validation, y_validation):
 
 
 def tournament_select(scores, k=2):
-    candidates = random.sample(list(range(len(scores))), k)
+    candidates = random.sample(range(len(scores)), k)
     return max(candidates, key=lambda idx: scores[idx])
 
 
@@ -283,8 +285,8 @@ def genetic_algorithm(
         while len(offspring) < pop_size:
             idx_a = tournament_select(scores)
             idx_b = tournament_select(scores)
-            parent_a = population[idx_a]
-            parent_b = population[idx_b]
+            parent_a = ranked[idx_a][0]
+            parent_b = ranked[idx_b][0]
             child_a, child_b = uniform_crossover(parent_a, parent_b)
             child_a = mutate(child_a, mutation_rate)
             child_b = mutate(child_b, mutation_rate)
@@ -315,17 +317,27 @@ def parse_args(argv=None):
     parser.add_argument("--pop-size", type=int, default=20)
     parser.add_argument("--max-generations", type=int, default=25)
     parser.add_argument("--mutation-rate", type=float, default=0.02)
-    return parser.parse_args(argv)
+    args = parser.parse_args(argv)
+
+    if args.max_features < 1:
+        parser.error("--max-features phải lớn hơn 0.")
+    if args.pop_size < 2:
+        parser.error("--pop-size phải từ 2 trở lên.")
+    if args.max_generations < 1:
+        parser.error("--max-generations phải từ 1 trở lên.")
+    if not 0 <= args.mutation_rate <= 1:
+        parser.error("--mutation-rate phải nằm trong khoảng [0, 1].")
+
+    return args
 
 
 def main(argv=None):
     args = parse_args(argv)
-    set_seed()
     df = load_dataset(args.csv_path, args.text_column, args.label_column)
     train_df, validation_df, test_df = split_dataset(df)
 
     vectorizer = TfidfVectorizer(
-        lowercase=True,
+        lowercase=False,
         tokenizer=vietnamese_tokenizer,
         token_pattern=None,
         ngram_range=(1, 2),
