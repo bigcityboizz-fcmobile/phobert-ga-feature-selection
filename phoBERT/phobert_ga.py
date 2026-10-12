@@ -9,6 +9,7 @@ import torch
 from sklearn.metrics import precision_recall_fscore_support
 from sklearn.model_selection import train_test_split
 from sklearn.svm import LinearSVC
+from underthesea import word_tokenize
 from transformers import AutoModel, AutoTokenizer
 
 
@@ -112,6 +113,12 @@ def mean_pooling(last_hidden_state, attention_mask):
     summed = (last_hidden_state * mask).sum(dim=1)
     counts = mask.sum(dim=1).clamp(min=1)
     return summed / counts
+
+
+def prepare_phobert_texts(texts, already_segmented=False):
+    if already_segmented:
+        return texts
+    return [word_tokenize(text, format="text") for text in texts]
 
 
 def extract_phobert_embeddings(
@@ -262,6 +269,11 @@ def parse_args():
     parser.add_argument("--label-column", default="label", help="Tên cột nhãn.")
     parser.add_argument("--model-name", default="vinai/phobert-base")
     parser.add_argument(
+        "--already-segmented",
+        action="store_true",
+        help="Bỏ qua tách từ nếu văn bản đã được tách theo chuẩn PhoBERT.",
+    )
+    parser.add_argument(
         "--output-dir",
         type=Path,
         default=PROJECT_ROOT / "outputs",
@@ -292,13 +304,26 @@ def main():
     print("\n=== Trích xuất embedding PhoBERT ===")
     embedding_start = time.time()
     X_train = extract_phobert_embeddings(
-        train_df["text"].tolist(), tokenizer, model, device
+        prepare_phobert_texts(
+            train_df["text"].tolist(), args.already_segmented
+        ),
+        tokenizer,
+        model,
+        device,
     )
     X_validation = extract_phobert_embeddings(
-        validation_df["text"].tolist(), tokenizer, model, device
+        prepare_phobert_texts(
+            validation_df["text"].tolist(), args.already_segmented
+        ),
+        tokenizer,
+        model,
+        device,
     )
     X_test = extract_phobert_embeddings(
-        test_df["text"].tolist(), tokenizer, model, device
+        prepare_phobert_texts(test_df["text"].tolist(), args.already_segmented),
+        tokenizer,
+        model,
+        device,
     )
     embedding_time = time.time() - embedding_start
     print(f"Kích thước embedding: {X_train.shape[1]}")

@@ -1,7 +1,9 @@
 numpy>=1.26
 pandas>=2.2
 scikit-learn>=1.4
+scipy>=1.11
 transformers>=4.42
 torch>=2.2
 sentencepiece>=0.2
 matplotlib>=3.8
+underthesea>=6.8

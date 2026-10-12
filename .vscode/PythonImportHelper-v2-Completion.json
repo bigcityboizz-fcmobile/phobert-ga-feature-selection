@@ -1,5 +1,14 @@
 [
     {
+        "label": "argparse",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "argparse",
+        "description": "argparse",
+        "detail": "argparse",
+        "documentation": {}
+    },
+    {
         "label": "random",
         "kind": 6,
         "isExtraImport": true,
@@ -70,6 +79,14 @@
         "documentation": {}
     },
     {
+        "label": "vstack",
+        "importPath": "scipy.sparse",
+        "description": "scipy.sparse",
+        "isExtraImport": true,
+        "detail": "scipy.sparse",
+        "documentation": {}
+    },
+    {
         "label": "TfidfVectorizer",
         "importPath": "sklearn.feature_extraction.text",
         "description": "sklearn.feature_extraction.text",
@@ -134,21 +151,20 @@
         "documentation": {}
     },
     {
-        "label": "argparse",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "argparse",
-        "description": "argparse",
-        "detail": "argparse",
-        "documentation": {}
-    },
-    {
         "label": "torch",
         "kind": 6,
         "isExtraImport": true,
         "importPath": "torch",
         "description": "torch",
         "detail": "torch",
+        "documentation": {}
+    },
+    {
+        "label": "word_tokenize",
+        "importPath": "underthesea",
+        "description": "underthesea",
+        "isExtraImport": true,
+        "detail": "underthesea",
         "documentation": {}
     },
     {
@@ -172,16 +188,25 @@
         "kind": 2,
         "importPath": "phoBERT.ga_vietnamese",
         "description": "phoBERT.ga_vietnamese",
-        "peekOfCode": "def set_seed(seed=42):\n    random.seed(seed)\n    np.random.seed(seed)\ndef build_dataset():\n    rows = []\n    for label, texts in DATA.items():\n        for text in texts:\n            rows.append({\"text\": text, \"label\": label})\n    return pd.DataFrame(rows)\ndef compute_metrics(y_true, y_pred):",
+        "peekOfCode": "def set_seed(seed=SEED):\n    random.seed(seed)\n    np.random.seed(seed)\ndef load_dataset(path, text_column, label_column):\n    if text_column == label_column:\n        raise ValueError(\"Tên cột văn bản và cột nhãn phải khác nhau.\")\n    df = pd.read_csv(path)\n    missing_columns = {text_column, label_column} - set(df.columns)\n    if missing_columns:\n        raise ValueError(",
         "detail": "phoBERT.ga_vietnamese",
         "documentation": {}
     },
     {
-        "label": "build_dataset",
+        "label": "load_dataset",
         "kind": 2,
         "importPath": "phoBERT.ga_vietnamese",
         "description": "phoBERT.ga_vietnamese",
-        "peekOfCode": "def build_dataset():\n    rows = []\n    for label, texts in DATA.items():\n        for text in texts:\n            rows.append({\"text\": text, \"label\": label})\n    return pd.DataFrame(rows)\ndef compute_metrics(y_true, y_pred):\n    precision, recall, f1, _ = precision_recall_fscore_support(\n        y_true, y_pred, average=\"macro\", zero_division=0\n    )",
+        "peekOfCode": "def load_dataset(path, text_column, label_column):\n    if text_column == label_column:\n        raise ValueError(\"Tên cột văn bản và cột nhãn phải khác nhau.\")\n    df = pd.read_csv(path)\n    missing_columns = {text_column, label_column} - set(df.columns)\n    if missing_columns:\n        raise ValueError(\n            f\"CSV thiếu cột bắt buộc: {', '.join(sorted(missing_columns))}\"\n        )\n    if df.empty:",
+        "detail": "phoBERT.ga_vietnamese",
+        "documentation": {}
+    },
+    {
+        "label": "split_dataset",
+        "kind": 2,
+        "importPath": "phoBERT.ga_vietnamese",
+        "description": "phoBERT.ga_vietnamese",
+        "peekOfCode": "def split_dataset(df, seed=SEED):\n    counts = df[\"label\"].value_counts()\n    too_small = counts[counts < 10]\n    if not too_small.empty:\n        details = \", \".join(f\"{label}: {count}\" for label, count in too_small.items())\n        raise ValueError(\n            \"Cần ít nhất 10 mẫu cho mỗi lớp để chia train/validation/test có \"\n            f\"phân tầng. Số mẫu hiện tại: {details}\"\n        )\n    train_df, holdout_df = train_test_split(",
         "detail": "phoBERT.ga_vietnamese",
         "documentation": {}
     },
@@ -190,7 +215,16 @@
         "kind": 2,
         "importPath": "phoBERT.ga_vietnamese",
         "description": "phoBERT.ga_vietnamese",
-        "peekOfCode": "def compute_metrics(y_true, y_pred):\n    precision, recall, f1, _ = precision_recall_fscore_support(\n        y_true, y_pred, average=\"macro\", zero_division=0\n    )\n    return {\n        \"precision\": float(precision),\n        \"recall\": float(recall),\n        \"macro_f1\": float(f1),\n    }\ndef save_results_csv(metrics, path):",
+        "peekOfCode": "def compute_metrics(y_true, y_pred):\n    precision, recall, f1, _ = precision_recall_fscore_support(\n        y_true, y_pred, average=\"macro\", zero_division=0\n    )\n    return {\n        \"precision\": float(precision),\n        \"recall\": float(recall),\n        \"macro_f1\": float(f1),\n    }\ndef print_metrics(title, metrics):",
+        "detail": "phoBERT.ga_vietnamese",
+        "documentation": {}
+    },
+    {
+        "label": "print_metrics",
+        "kind": 2,
+        "importPath": "phoBERT.ga_vietnamese",
+        "description": "phoBERT.ga_vietnamese",
+        "peekOfCode": "def print_metrics(title, metrics):\n    print(f\"\\n=== {title} ===\")\n    print(f\"Precision macro: {metrics['precision']:.4f}\")\n    print(f\"Recall macro: {metrics['recall']:.4f}\")\n    print(f\"Macro-F1: {metrics['macro_f1']:.4f}\")\ndef save_results_csv(metrics, path):\n    pd.DataFrame([metrics]).to_csv(path, index=False)\n    return path\ndef plot_confusion_matrix(y_true, y_pred, labels, output_path):\n    cm = confusion_matrix(y_true, y_pred, labels=labels)",
         "detail": "phoBERT.ga_vietnamese",
         "documentation": {}
     },
@@ -235,7 +269,7 @@
         "kind": 2,
         "importPath": "phoBERT.ga_vietnamese",
         "description": "phoBERT.ga_vietnamese",
-        "peekOfCode": "def create_population(size, n_features):\n    return np.array(\n        [np.random.randint(0, 2, size=n_features, dtype=np.int8) for _ in range(size)],\n        dtype=np.int8,\n    )\ndef evaluate_chromosome(mask, X_train, y_train, X_test, y_test):\n    selected_idx = np.where(mask == 1)[0]\n    if len(selected_idx) == 0:\n        return {\n            \"fitness\": -1.0,",
+        "peekOfCode": "def create_population(size, n_features):\n    if size < 2:\n        raise ValueError(\"Kích thước quần thể GA phải từ 2 trở lên.\")\n    if n_features < 1:\n        raise ValueError(\"Không có đặc trưng để GA lựa chọn.\")\n    return np.random.randint(0, 2, size=(size, n_features), dtype=np.int8)\ndef evaluate_chromosome(mask, X_train, y_train, X_validation, y_validation):\n    selected_idx = np.flatnonzero(mask)\n    if selected_idx.size == 0:\n        return {\"fitness\": -1.0, \"macro_f1\": 0.0, \"n_selected\": 0}",
         "detail": "phoBERT.ga_vietnamese",
         "documentation": {}
     },
@@ -244,7 +278,7 @@
         "kind": 2,
         "importPath": "phoBERT.ga_vietnamese",
         "description": "phoBERT.ga_vietnamese",
-        "peekOfCode": "def evaluate_chromosome(mask, X_train, y_train, X_test, y_test):\n    selected_idx = np.where(mask == 1)[0]\n    if len(selected_idx) == 0:\n        return {\n            \"fitness\": -1.0,\n            \"macro_f1\": 0.0,\n            \"precision\": 0.0,\n            \"recall\": 0.0,\n            \"n_selected\": 0,\n            \"pred\": np.array([y_test[0]] * len(y_test)),",
+        "peekOfCode": "def evaluate_chromosome(mask, X_train, y_train, X_validation, y_validation):\n    selected_idx = np.flatnonzero(mask)\n    if selected_idx.size == 0:\n        return {\"fitness\": -1.0, \"macro_f1\": 0.0, \"n_selected\": 0}\n    X_train_sel = X_train[:, selected_idx]\n    X_validation_sel = X_validation[:, selected_idx]\n    model = LinearSVC(C=1.0, random_state=SEED)\n    model.fit(X_train_sel, y_train)\n    pred = model.predict(X_validation_sel)\n    metrics = compute_metrics(y_validation, pred)",
         "detail": "phoBERT.ga_vietnamese",
         "documentation": {}
     },
@@ -271,7 +305,7 @@
         "kind": 2,
         "importPath": "phoBERT.ga_vietnamese",
         "description": "phoBERT.ga_vietnamese",
-        "peekOfCode": "def mutate(chromosome, mutation_rate=0.02):\n    mutated = chromosome.copy()\n    mutation_mask = np.random.random(len(mutated)) < mutation_rate\n    mutated[mutation_mask] = 1 - mutated[mutation_mask]\n    return mutated.astype(np.int8)\ndef genetic_algorithm(\n    X_train,\n    y_train,\n    X_test,\n    y_test,",
+        "peekOfCode": "def mutate(chromosome, mutation_rate=0.02):\n    mutated = chromosome.copy()\n    mutation_mask = np.random.random(len(mutated)) < mutation_rate\n    mutated[mutation_mask] = 1 - mutated[mutation_mask]\n    return mutated.astype(np.int8)\ndef genetic_algorithm(\n    X_train,\n    y_train,\n    X_validation,\n    y_validation,",
         "detail": "phoBERT.ga_vietnamese",
         "documentation": {}
     },
@@ -280,7 +314,16 @@
         "kind": 2,
         "importPath": "phoBERT.ga_vietnamese",
         "description": "phoBERT.ga_vietnamese",
-        "peekOfCode": "def genetic_algorithm(\n    X_train,\n    y_train,\n    X_test,\n    y_test,\n    pop_size=20,\n    max_generations=25,\n    mutation_rate=0.02,\n    elite_count=2,\n):",
+        "peekOfCode": "def genetic_algorithm(\n    X_train,\n    y_train,\n    X_validation,\n    y_validation,\n    pop_size=20,\n    max_generations=25,\n    mutation_rate=0.02,\n    elite_count=2,\n):",
+        "detail": "phoBERT.ga_vietnamese",
+        "documentation": {}
+    },
+    {
+        "label": "parse_args",
+        "kind": 2,
+        "importPath": "phoBERT.ga_vietnamese",
+        "description": "phoBERT.ga_vietnamese",
+        "peekOfCode": "def parse_args(argv=None):\n    parser = argparse.ArgumentParser(\n        description=\"So sánh TF-IDF + LinearSVC với GA chọn đặc trưng.\"\n    )\n    parser.add_argument(\"csv_path\", type=Path, help=\"CSV có cột văn bản và nhãn.\")\n    parser.add_argument(\"--text-column\", default=\"text\", help=\"Tên cột văn bản.\")\n    parser.add_argument(\"--label-column\", default=\"label\", help=\"Tên cột nhãn.\")\n    parser.add_argument(\n        \"--output-dir\",\n        type=Path,",
         "detail": "phoBERT.ga_vietnamese",
         "documentation": {}
     },
@@ -289,7 +332,7 @@
         "kind": 2,
         "importPath": "phoBERT.ga_vietnamese",
         "description": "phoBERT.ga_vietnamese",
-        "peekOfCode": "def main():\n    df = build_dataset()\n    train_df, test_df = train_test_split(\n        df, test_size=0.25, stratify=df[\"label\"], random_state=42\n    )\n    vectorizer = TfidfVectorizer(\n        lowercase=True,\n        ngram_range=(1, 2),\n        min_df=1,\n        max_features=500,",
+        "peekOfCode": "def main(argv=None):\n    args = parse_args(argv)\n    set_seed()\n    df = load_dataset(args.csv_path, args.text_column, args.label_column)\n    train_df, validation_df, test_df = split_dataset(df)\n    vectorizer = TfidfVectorizer(\n        lowercase=True,\n        ngram_range=(1, 2),\n        min_df=1,\n        max_features=args.max_features,",
         "detail": "phoBERT.ga_vietnamese",
         "documentation": {}
     },
@@ -298,25 +341,25 @@
         "kind": 5,
         "importPath": "phoBERT.ga_vietnamese",
         "description": "phoBERT.ga_vietnamese",
-        "peekOfCode": "PROJECT_ROOT = Path(__file__).resolve().parents[1]\nOUTPUT_DIR = PROJECT_ROOT / \"outputs\"\nOUTPUT_DIR.mkdir(exist_ok=True, parents=True)\nDATA = {\n    \"tich_cuc\": [\n        \"chào bạn, mình là Phạm Mạnh Hùng\",\n    ],\n    \"tieu_cuc\": [\n        \"Mày là đồ khùng, ngu dốt\",\n    ],",
+        "peekOfCode": "PROJECT_ROOT = Path(__file__).resolve().parents[1]\nSEED = 42\nFEATURE_PENALTY = 0.1\ndef set_seed(seed=SEED):\n    random.seed(seed)\n    np.random.seed(seed)\ndef load_dataset(path, text_column, label_column):\n    if text_column == label_column:\n        raise ValueError(\"Tên cột văn bản và cột nhãn phải khác nhau.\")\n    df = pd.read_csv(path)",
         "detail": "phoBERT.ga_vietnamese",
         "documentation": {}
     },
     {
-        "label": "OUTPUT_DIR",
+        "label": "SEED",
         "kind": 5,
         "importPath": "phoBERT.ga_vietnamese",
         "description": "phoBERT.ga_vietnamese",
-        "peekOfCode": "OUTPUT_DIR = PROJECT_ROOT / \"outputs\"\nOUTPUT_DIR.mkdir(exist_ok=True, parents=True)\nDATA = {\n    \"tich_cuc\": [\n        \"chào bạn, mình là Phạm Mạnh Hùng\",\n    ],\n    \"tieu_cuc\": [\n        \"Mày là đồ khùng, ngu dốt\",\n    ],\n    \"trung_tinh\": [",
+        "peekOfCode": "SEED = 42\nFEATURE_PENALTY = 0.1\ndef set_seed(seed=SEED):\n    random.seed(seed)\n    np.random.seed(seed)\ndef load_dataset(path, text_column, label_column):\n    if text_column == label_column:\n        raise ValueError(\"Tên cột văn bản và cột nhãn phải khác nhau.\")\n    df = pd.read_csv(path)\n    missing_columns = {text_column, label_column} - set(df.columns)",
         "detail": "phoBERT.ga_vietnamese",
         "documentation": {}
     },
     {
-        "label": "DATA",
+        "label": "FEATURE_PENALTY",
         "kind": 5,
         "importPath": "phoBERT.ga_vietnamese",
         "description": "phoBERT.ga_vietnamese",
-        "peekOfCode": "DATA = {\n    \"tich_cuc\": [\n        \"chào bạn, mình là Phạm Mạnh Hùng\",\n    ],\n    \"tieu_cuc\": [\n        \"Mày là đồ khùng, ngu dốt\",\n    ],\n    \"trung_tinh\": [\n        \"cũng đc nhma vẫn khùng\",\n    ],",
+        "peekOfCode": "FEATURE_PENALTY = 0.1\ndef set_seed(seed=SEED):\n    random.seed(seed)\n    np.random.seed(seed)\ndef load_dataset(path, text_column, label_column):\n    if text_column == label_column:\n        raise ValueError(\"Tên cột văn bản và cột nhãn phải khác nhau.\")\n    df = pd.read_csv(path)\n    missing_columns = {text_column, label_column} - set(df.columns)\n    if missing_columns:",
         "detail": "phoBERT.ga_vietnamese",
         "documentation": {}
     },
@@ -370,7 +413,16 @@
         "kind": 2,
         "importPath": "phoBERT.phobert_ga",
         "description": "phoBERT.phobert_ga",
-        "peekOfCode": "def mean_pooling(last_hidden_state, attention_mask):\n    mask = attention_mask.unsqueeze(-1).to(dtype=last_hidden_state.dtype)\n    summed = (last_hidden_state * mask).sum(dim=1)\n    counts = mask.sum(dim=1).clamp(min=1)\n    return summed / counts\ndef extract_phobert_embeddings(\n    texts, tokenizer, model, device, batch_size=16, max_length=128\n):\n    embeddings = []\n    model.eval()",
+        "peekOfCode": "def mean_pooling(last_hidden_state, attention_mask):\n    mask = attention_mask.unsqueeze(-1).to(dtype=last_hidden_state.dtype)\n    summed = (last_hidden_state * mask).sum(dim=1)\n    counts = mask.sum(dim=1).clamp(min=1)\n    return summed / counts\ndef prepare_phobert_texts(texts, already_segmented=False):\n    if already_segmented:\n        return texts\n    return [word_tokenize(text, format=\"text\") for text in texts]\ndef extract_phobert_embeddings(",
+        "detail": "phoBERT.phobert_ga",
+        "documentation": {}
+    },
+    {
+        "label": "prepare_phobert_texts",
+        "kind": 2,
+        "importPath": "phoBERT.phobert_ga",
+        "description": "phoBERT.phobert_ga",
+        "peekOfCode": "def prepare_phobert_texts(texts, already_segmented=False):\n    if already_segmented:\n        return texts\n    return [word_tokenize(text, format=\"text\") for text in texts]\ndef extract_phobert_embeddings(\n    texts, tokenizer, model, device, batch_size=16, max_length=128\n):\n    embeddings = []\n    model.eval()\n    with torch.inference_mode():",
         "detail": "phoBERT.phobert_ga",
         "documentation": {}
     },

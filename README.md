@@ -11,24 +11,24 @@ pip install -r requirements.txt
 ## Chuẩn bị dữ liệu và chạy
 
 ```bash
-python phoBERT/phobert_ga_demo.py data/vietnamese_hate_speech.csv \
+python phoBERT/phobert_ga.py data/vietnamese_hate_speech.csv \
   --text-column text \
   --label-column label
 ```
 
-CSV phải có một hàng tiêu đề cùng cột văn bản và cột nhãn. Hỗ trợ phân loại nhị phân hoặc nhiều lớp; nhãn được đọc từ dữ liệu, không bị giới hạn vào tên lớp cố định. Cần ít nhất 10 mẫu cho mỗi lớp để tạo các tập train/validation/test có phân tầng.
+CSV phải có một hàng tiêu đề cùng cột văn bản và cột nhãn. Hỗ trợ phân loại nhị phân hoặc nhiều lớp; nhãn được đọc từ dữ liệu, không bị giới hạn vào tên lớp cố định. Cần ít nhất 10 mẫu cho mỗi lớp để tạo các tập train/validation/test có phân tầng. Văn bản thô được tách từ bằng Underthesea trước khi đưa vào PhoBERT.
 
 Có thể dùng tên cột khác hoặc chọn mô hình/thư mục kết quả khác:
 
 ```bash
-python phoBERT/phobert_ga_demo.py data/dataset.csv \
+python phoBERT/phobert_ga.py data/dataset.csv \
   --text-column comment \
   --label-column class \
   --model-name vinai/phobert-base \
   --output-dir outputs
 ```
 
-Tokenizer và mô hình PhoBERT được tải từ Hugging Face khi chạy lần đầu. Pipeline tự chọn GPU nếu PyTorch CUDA khả dụng; nếu không thì chạy trên CPU.
+Nếu văn bản trong CSV đã được tách từ theo chuẩn PhoBERT (các từ ghép nối bằng `_`), có thể dùng `--already-segmented` để bỏ qua bước tách từ. Tokenizer và mô hình PhoBERT được tải từ Hugging Face khi chạy lần đầu. Pipeline tự chọn GPU nếu PyTorch CUDA khả dụng; nếu không thì chạy trên CPU.
 
 Kết quả được ghi vào thư mục output:
 
@@ -38,4 +38,12 @@ Kết quả được ghi vào thư mục output:
 
 GA chỉ dùng train để huấn luyện và validation để chấm fitness/chọn đặc trưng. Test được giữ riêng đến bước đánh giá cuối; baseline và GA đều được huấn luyện lại trên train + validation trước khi so sánh trên test. Kết quả cải thiện macro-F1 không được đảm bảo và phụ thuộc vào dữ liệu, nhãn, cũng như seed.
 
-`phoBERT/ga_vietnamese_demo.py` là demo TF-IDF cũ, không phải pipeline PhoBERT phát hiện phát ngôn thù ghét.
+`phoBERT/ga_vietnamese.py` là pipeline thử nghiệm TF-IDF + GA độc lập. Chạy với CSV cùng cấu trúc:
+
+```bash
+python phoBERT/ga_vietnamese.py data/vietnamese_hate_speech.csv \
+  --text-column text \
+  --label-column label
+```
+
+Pipeline TF-IDF cũng yêu cầu ít nhất 10 mẫu mỗi lớp, chọn đặc trưng trên validation, rồi chỉ đánh giá trên test ở bước cuối. Kết quả được lưu trong `outputs/tfidf_ga/`.

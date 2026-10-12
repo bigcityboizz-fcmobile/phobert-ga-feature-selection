@@ -1,3 +1,4 @@
+import argparse
 import random
 import time
 from pathlib import Path
@@ -8,6 +9,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from scipy.sparse import vstack
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics import confusion_matrix, precision_recall_fscore_support
 from sklearn.model_selection import train_test_split
@@ -15,33 +17,69 @@ from sklearn.svm import LinearSVC
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
-OUTPUT_DIR = PROJECT_ROOT / "outputs"
-OUTPUT_DIR.mkdir(exist_ok=True, parents=True)
-
-DATA = {
-    "tich_cuc": [
-        "chào bạn, mình là Phạm Mạnh Hùng",
-    ],
-    "tieu_cuc": [
-        "Mày là đồ khùng, ngu dốt",
-    ],
-    "trung_tinh": [
-        "cũng đc nhma vẫn khùng",
-    ],
-}
+SEED = 42
+FEATURE_PENALTY = 0.1
 
 
-def set_seed(seed=42):
+def set_seed(seed=SEED):
     random.seed(seed)
     np.random.seed(seed)
 
 
-def build_dataset():
-    rows = []
-    for label, texts in DATA.items():
-        for text in texts:
-            rows.append({"text": text, "label": label})
-    return pd.DataFrame(rows)
+def load_dataset(path, text_column, label_column):
+    if text_column == label_column:
+        raise ValueError("Tên cột văn bản và cột nhãn phải khác nhau.")
+    df = pd.read_csv(path)
+    missing_columns = {text_column, label_column} - set(df.columns)
+    if missing_columns:
+        raise ValueError(
+            f"CSV thiếu cột bắt buộc: {', '.join(sorted(missing_columns))}"
+        )
+    if df.empty:
+        raise ValueError("CSV không có dữ liệu.")
+
+    data = df[[text_column, label_column]].copy()
+    invalid_rows = data.isna().any(axis=1)
+    data[text_column] = data[text_column].astype("string").str.strip()
+    data[label_column] = data[label_column].astype("string").str.strip()
+    invalid_rows |= data[text_column].eq("") | data[label_column].eq("")
+    if invalid_rows.any():
+        rows = (data.index[invalid_rows] + 2).tolist()
+        raise ValueError(
+            f"Có văn bản hoặc nhãn rỗng/thiếu tại dòng CSV: {rows[:10]}"
+        )
+
+    data.columns = ["text", "label"]
+    data["text"] = data["text"].astype(str)
+    data["label"] = data["label"].astype(str)
+    if data["label"].nunique() < 2:
+        raise ValueError("Cần ít nhất hai lớp nhãn để huấn luyện bộ phân loại.")
+    return data
+
+
+def split_dataset(df, seed=SEED):
+    counts = df["label"].value_counts()
+    too_small = counts[counts < 10]
+    if not too_small.empty:
+        details = ", ".join(f"{label}: {count}" for label, count in too_small.items())
+        raise ValueError(
+            "Cần ít nhất 10 mẫu cho mỗi lớp để chia train/validation/test có "
+            f"phân tầng. Số mẫu hiện tại: {details}"
+        )
+
+    train_df, holdout_df = train_test_split(
+        df,
+        test_size=0.3,
+        stratify=df["label"],
+        random_state=seed,
+    )
+    validation_df, test_df = train_test_split(
+        holdout_df,
+        test_size=0.5,
+        stratify=holdout_df["label"],
+        random_state=seed,
+    )
+    return train_df, validation_df, test_df
 
 
 def compute_metrics(y_true, y_pred):
@@ -53,6 +91,13 @@ def compute_metrics(y_true, y_pred):
         "recall": float(recall),
         "macro_f1": float(f1),
     }
+
+
+def print_metrics(title, metrics):
+    print(f"\n=== {title} ===")
+    print(f"Precision macro: {metrics['precision']:.4f}")
+    print(f"Recall macro: {metrics['recall']:.4f}")
+    print(f"Macro-F1: {metrics['macro_f1']:.4f}")
 
 
 def save_results_csv(metrics, path):
@@ -132,45 +177,33 @@ def report_error_analysis(y_true, y_pred, texts):
 
 
 def create_population(size, n_features):
-    return np.array(
-        [np.random.randint(0, 2, size=n_features, dtype=np.int8) for _ in range(size)],
-        dtype=np.int8,
-    )
+    if size < 2:
+        raise ValueError("Kích thước quần thể GA phải từ 2 trở lên.")
+    if n_features < 1:
+        raise ValueError("Không có đặc trưng để GA lựa chọn.")
+    return np.random.randint(0, 2, size=(size, n_features), dtype=np.int8)
 
 
-def evaluate_chromosome(mask, X_train, y_train, X_test, y_test):
-    selected_idx = np.where(mask == 1)[0]
-    if len(selected_idx) == 0:
-        return {
-            "fitness": -1.0,
-            "macro_f1": 0.0,
-            "precision": 0.0,
-            "recall": 0.0,
-            "n_selected": 0,
-            "pred": np.array([y_test[0]] * len(y_test)),
-        }
+def evaluate_chromosome(mask, X_train, y_train, X_validation, y_validation):
+    selected_idx = np.flatnonzero(mask)
+    if selected_idx.size == 0:
+        return {"fitness": -1.0, "macro_f1": 0.0, "n_selected": 0}
 
     X_train_sel = X_train[:, selected_idx]
-    X_test_sel = X_test[:, selected_idx]
+    X_validation_sel = X_validation[:, selected_idx]
 
-    model = LinearSVC(C=1.0, random_state=42)
-    start = time.time()
+    model = LinearSVC(C=1.0, random_state=SEED)
     model.fit(X_train_sel, y_train)
-    elapsed = time.time() - start
-    pred = model.predict(X_test_sel)
+    pred = model.predict(X_validation_sel)
 
-    metrics = compute_metrics(y_test, pred)
-    selected_ratio = len(selected_idx) / X_train.shape[1]
-    fitness = metrics["macro_f1"] - 0.1 * selected_ratio
+    metrics = compute_metrics(y_validation, pred)
+    selected_ratio = selected_idx.size / X_train.shape[1]
+    fitness = metrics["macro_f1"] - FEATURE_PENALTY * selected_ratio
 
     return {
         "fitness": float(fitness),
         "macro_f1": metrics["macro_f1"],
-        "precision": metrics["precision"],
-        "recall": metrics["recall"],
-        "n_selected": len(selected_idx),
-        "pred": pred,
-        "train_time": elapsed,
+        "n_selected": int(selected_idx.size),
     }
 
 
@@ -196,14 +229,21 @@ def mutate(chromosome, mutation_rate=0.02):
 def genetic_algorithm(
     X_train,
     y_train,
-    X_test,
-    y_test,
+    X_validation,
+    y_validation,
     pop_size=20,
     max_generations=25,
     mutation_rate=0.02,
     elite_count=2,
 ):
-    set_seed(42)
+    if max_generations < 1:
+        raise ValueError("Số thế hệ GA phải từ 1 trở lên.")
+    if not 0 <= mutation_rate <= 1:
+        raise ValueError("mutation_rate phải nằm trong khoảng [0, 1].")
+    if not 1 <= elite_count <= pop_size:
+        raise ValueError("elite_count phải nằm trong khoảng [1, pop_size].")
+
+    set_seed()
     population = create_population(pop_size, X_train.shape[1])
     best_mask = None
     best_score = -np.inf
@@ -213,7 +253,9 @@ def genetic_algorithm(
     for _ in range(max_generations):
         evaluated = []
         for chrom in population:
-            result = evaluate_chromosome(chrom, X_train, y_train, X_test, y_test)
+            result = evaluate_chromosome(
+                chrom, X_train, y_train, X_validation, y_validation
+            )
             evaluated.append((chrom, result))
 
         ranked = sorted(evaluated, key=lambda item: item[1]["fitness"], reverse=True)
@@ -245,101 +287,153 @@ def genetic_algorithm(
 
         population = np.array(offspring[:pop_size], dtype=np.int8)
 
-    if best_mask is None:
-        best_mask = population[0].copy()
-        best_result = evaluate_chromosome(best_mask, X_train, y_train, X_test, y_test)
+    if best_mask is None or best_result is None:
+        raise RuntimeError("GA không tạo được nghiệm hợp lệ.")
 
     return best_mask, best_result
 
 
-def main():
-    df = build_dataset()
-    train_df, test_df = train_test_split(
-        df, test_size=0.25, stratify=df["label"], random_state=42
+def parse_args(argv=None):
+    parser = argparse.ArgumentParser(
+        description="So sánh TF-IDF + LinearSVC với GA chọn đặc trưng."
     )
+    parser.add_argument("csv_path", type=Path, help="CSV có cột văn bản và nhãn.")
+    parser.add_argument("--text-column", default="text", help="Tên cột văn bản.")
+    parser.add_argument("--label-column", default="label", help="Tên cột nhãn.")
+    parser.add_argument(
+        "--output-dir",
+        type=Path,
+        default=PROJECT_ROOT / "outputs" / "tfidf_ga",
+        help="Thư mục lưu kết quả.",
+    )
+    parser.add_argument("--max-features", type=int, default=500)
+    parser.add_argument("--pop-size", type=int, default=20)
+    parser.add_argument("--max-generations", type=int, default=25)
+    parser.add_argument("--mutation-rate", type=float, default=0.02)
+    return parser.parse_args(argv)
+
+
+def main(argv=None):
+    args = parse_args(argv)
+    set_seed()
+    df = load_dataset(args.csv_path, args.text_column, args.label_column)
+    train_df, validation_df, test_df = split_dataset(df)
 
     vectorizer = TfidfVectorizer(
         lowercase=True,
         ngram_range=(1, 2),
         min_df=1,
-        max_features=500,
+        max_features=args.max_features,
     )
 
     X_train_raw = train_df["text"].tolist()
+    X_validation_raw = validation_df["text"].tolist()
     X_test_raw = test_df["text"].tolist()
-    y_train = train_df["label"].tolist()
-    y_test = test_df["label"].tolist()
+    y_train = train_df["label"].to_numpy()
+    y_validation = validation_df["label"].to_numpy()
+    y_test = test_df["label"].to_numpy()
 
     print("\n=== Bắt đầu xử lý dữ liệu tiếng Việt ===")
+    print(f"Số mẫu: {len(df)} | Số lớp: {df['label'].nunique()}")
     print(f"Số mẫu train: {len(X_train_raw)}")
+    print(f"Số mẫu validation: {len(X_validation_raw)}")
     print(f"Số mẫu test: {len(X_test_raw)}")
 
     start = time.time()
     X_train_tfidf = vectorizer.fit_transform(X_train_raw)
+    X_validation_tfidf = vectorizer.transform(X_validation_raw)
     X_test_tfidf = vectorizer.transform(X_test_raw)
-    baseline_model = LinearSVC(C=1.0, random_state=42)
-    baseline_model.fit(X_train_tfidf, y_train)
-    baseline_pred = baseline_model.predict(X_test_tfidf)
-    baseline_metrics = compute_metrics(y_test, baseline_pred)
-    baseline_time = time.time() - start
+    vectorization_time = time.time() - start
 
-    print("\n=== Baseline: TF-IDF + SVM ===")
-    print(f"Precision: {baseline_metrics['precision']:.4f}")
-    print(f"Recall: {baseline_metrics['recall']:.4f}")
-    print(f"Macro-F1: {baseline_metrics['macro_f1']:.4f}")
-    print(f"Thời gian huấn luyện: {baseline_time:.3f}s")
-
+    print("\n=== Tìm đặc trưng bằng GA (validation only) ===")
     ga_start = time.time()
     best_mask, best_result = genetic_algorithm(
-        X_train_tfidf.toarray(),
+        X_train_tfidf,
         y_train,
-        X_test_tfidf.toarray(),
-        y_test,
-        pop_size=20,
-        max_generations=25,
-        mutation_rate=0.02,
+        X_validation_tfidf,
+        y_validation,
+        pop_size=args.pop_size,
+        max_generations=args.max_generations,
+        mutation_rate=args.mutation_rate,
     )
     ga_time = time.time() - ga_start
 
-    selected_idx = np.where(best_mask == 1)[0]
-    X_train_selected = X_train_tfidf.toarray()[:, selected_idx]
-    X_test_selected = X_test_tfidf.toarray()[:, selected_idx]
+    selected_idx = np.flatnonzero(best_mask)
+    if selected_idx.size == 0:
+        raise RuntimeError("GA không chọn đặc trưng nào.")
+    print(
+        f"Fitness validation tốt nhất: {best_result['fitness']:.4f} | "
+        f"Macro-F1 validation: {best_result['macro_f1']:.4f}"
+    )
 
-    ga_model = LinearSVC(C=1.0, random_state=42)
-    ga_model.fit(X_train_selected, y_train)
-    ga_pred = ga_model.predict(X_test_selected)
+    X_train_final = vstack((X_train_tfidf, X_validation_tfidf), format="csr")
+    y_train_final = np.concatenate((y_train, y_validation))
+
+    baseline_start = time.time()
+    baseline_model = LinearSVC(C=1.0, random_state=SEED)
+    baseline_model.fit(X_train_final, y_train_final)
+    baseline_pred = baseline_model.predict(X_test_tfidf)
+    baseline_time = time.time() - baseline_start
+    baseline_metrics = compute_metrics(y_test, baseline_pred)
+
+    ga_model = LinearSVC(C=1.0, random_state=SEED)
+    ga_model.fit(X_train_final[:, selected_idx], y_train_final)
+    ga_pred = ga_model.predict(X_test_tfidf[:, selected_idx])
     ga_metrics = compute_metrics(y_test, ga_pred)
 
+    print_metrics("Baseline: TF-IDF + SVM (test)", baseline_metrics)
+    print(f"Thời gian huấn luyện baseline: {baseline_time:.3f}s")
+    print_metrics("TF-IDF + GA feature selection (test)", ga_metrics)
+    print(
+        f"Số đặc trưng được chọn: {selected_idx.size} / "
+        f"{X_train_tfidf.shape[1]}"
+    )
+
+    args.output_dir.mkdir(parents=True, exist_ok=True)
     summary = {
+        "samples": len(df),
+        "classes": df["label"].nunique(),
         "baseline_precision": baseline_metrics["precision"],
         "baseline_recall": baseline_metrics["recall"],
         "baseline_macro_f1": baseline_metrics["macro_f1"],
         "ga_precision": ga_metrics["precision"],
         "ga_recall": ga_metrics["recall"],
         "ga_macro_f1": ga_metrics["macro_f1"],
-        "selected_features": len(selected_idx),
+        "selected_features": int(selected_idx.size),
         "total_features": X_train_tfidf.shape[1],
+        "feature_reduction": float(1 - selected_idx.size / X_train_tfidf.shape[1]),
         "ga_time_seconds": ga_time,
         "baseline_time_seconds": baseline_time,
+        "vectorization_time_seconds": vectorization_time,
     }
 
-    save_results_csv(summary, OUTPUT_DIR / "ga_results.csv")
-    plot_confusion_matrix(y_test, ga_pred, sorted(set(y_test)), OUTPUT_DIR / "confusion_matrix.png")
-    plot_metric_comparison(baseline_metrics, ga_metrics, OUTPUT_DIR / "metric_comparison.png")
-
-    print("\n=== Sau GA: TF-IDF + SVM với chọn đặc trưng ===")
-    print(f"Precision: {ga_metrics['precision']:.4f}")
-    print(f"Recall: {ga_metrics['recall']:.4f}")
-    print(f"Macro-F1: {ga_metrics['macro_f1']:.4f}")
-    print(f"Số đặc trưng được chọn: {len(selected_idx)} / {X_train_tfidf.shape[1]}")
-    print(f"Thời gian huấn luyện GA: {ga_time:.3f}s")
+    save_results_csv(summary, args.output_dir / "ga_results.csv")
+    plot_confusion_matrix(
+        y_test,
+        ga_pred,
+        sorted(set(y_test)),
+        args.output_dir / "confusion_matrix.png",
+    )
+    plot_metric_comparison(
+        baseline_metrics,
+        ga_metrics,
+        args.output_dir / "metric_comparison.png",
+    )
+    pd.DataFrame(
+        {
+            "text": X_test_raw,
+            "true_label": y_test,
+            "baseline_prediction": baseline_pred,
+            "ga_prediction": ga_pred,
+        }
+    ).to_csv(args.output_dir / "test_predictions.csv", index=False)
 
     delta = ga_metrics["macro_f1"] - baseline_metrics["macro_f1"]
-    reduction = 1 - (len(selected_idx) / X_train_tfidf.shape[1])
+    reduction = 1 - selected_idx.size / X_train_tfidf.shape[1]
     print("\n=== So sánh trước/sau GA ===")
     print(f"Macro-F1 tăng: {delta:.4f}")
     print(f"Giảm đặc trưng: {reduction * 100:.2f}%")
-    print(f"Đã lưu kết quả tại: {OUTPUT_DIR}")
+    print(f"Đã lưu kết quả tại: {args.output_dir}")
 
     print("\n=== Phân tích lỗi ===")
     report_error_analysis(y_test, ga_pred, X_test_raw)
