@@ -8,10 +8,7 @@ import numpy as np
 import pandas as pd
 from scipy.sparse import vstack
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics import (
-    confusion_matrix,
-    precision_recall_fscore_support,
-)
+from sklearn.metrics import confusion_matrix, precision_recall_fscore_support
 from sklearn.model_selection import train_test_split
 from sklearn.svm import LinearSVC
 from underthesea import word_tokenize
@@ -46,7 +43,8 @@ def load_dataset(path, text_column, label_column):
     if invalid_rows.any():
         rows = (data.index[invalid_rows] + 2).tolist()
         raise ValueError(
-            f"Có văn bản hoặc nhãn rỗng/thiếu tại dòng CSV: {rows[:10]}"
+            "Có văn bản hoặc nhãn rỗng/thiếu tại dòng CSV: "
+            f"{rows[:10]}"
         )
 
     data.columns = ["text", "label"]
@@ -182,8 +180,8 @@ def report_error_analysis(y_true, y_pred, texts):
 
     for true_label, pred_label, text in misclassified[:10]:
         print(
-            f"- Đúng: {true_label} | Dự đoán: {pred_label} "
-            f"| Văn bản: '{text}'"
+            "- Đúng: "
+            f"{true_label} | Dự đoán: {pred_label} | Văn bản: '{text}'"
         )
 
 
@@ -397,8 +395,10 @@ def main(argv=None):
     if selected_idx.size == 0:
         raise RuntimeError("GA không chọn đặc trưng nào.")
     print(
-        f"Fitness validation tốt nhất: {best_result['fitness']:.4f} | "
-        f"Macro-F1 validation: {best_result['macro_f1']:.4f}"
+        "Fitness validation tốt nhất: "
+        f"{best_result['fitness']:.4f} | "
+        "Macro-F1 validation: "
+        f"{best_result['macro_f1']:.4f}"
     )
 
     X_train_final = vstack((X_train_tfidf, X_validation_tfidf), format="csr")
