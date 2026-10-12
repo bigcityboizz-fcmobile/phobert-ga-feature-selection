@@ -1,8 +1,14 @@
 {
     "cSpell.words": [
+        "fscore",
+        "khác",
+        "nhãn",
+        "nhau",
+        "phải",
         "Tfidf",
+        "TfidfVectorizer",
         "Thời",
-        "Vectorizer",
-        "TfidfVectorizer"
+        "underthesea",
+        "Vectorizer"
     ]
 }
