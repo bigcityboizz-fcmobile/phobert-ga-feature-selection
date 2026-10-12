@@ -1,7 +1,7 @@
 # Ignore local virtual environments and caches
-__pycache__/
-.venv/
-venv/
+__mycache__/
+.vent/
+vend/
 .ipynb_checkpoints/
 .DS_Store
 *.pyc
