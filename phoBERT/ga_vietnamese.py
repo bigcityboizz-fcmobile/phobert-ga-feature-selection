@@ -16,7 +16,6 @@ from sklearn.model_selection import train_test_split
 from sklearn.svm import LinearSVC
 from underthesea import word_tokenize
 
-
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SEED = 42
 FEATURE_PENALTY = 0.1
