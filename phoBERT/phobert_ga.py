@@ -9,8 +9,8 @@ import torch
 from sklearn.metrics import precision_recall_fscore_support
 from sklearn.model_selection import train_test_split
 from sklearn.svm import LinearSVC
-from underthesea import word_tokenize
 from transformers import AutoModel, AutoTokenizer
+from underthesea import word_tokenize
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
@@ -53,7 +53,9 @@ def load_dataset(path, text_column, label_column):
     data["text"] = data["text"].astype(str)
     data["label"] = data["label"].astype(str)
     if data["label"].nunique() < 2:
-        raise ValueError("Cần ít nhất hai lớp nhãn để huấn luyện bộ phân loại.")
+        raise ValueError(
+            "Cần ít nhất hai lớp nhãn để huấn luyện bộ phân loại."
+        )
     return data
 
 
@@ -61,7 +63,9 @@ def split_dataset(df, seed=SEED):
     counts = df["label"].value_counts()
     too_small = counts[counts < 10]
     if not too_small.empty:
-        details = ", ".join(f"{label}: {count}" for label, count in too_small.items())
+        details = ", ".join(
+            f"{label}: {count}" for label, count in too_small.items()
+        )
         raise ValueError(
             "Cần ít nhất 10 mẫu cho mỗi lớp để chia train/validation/test có "
             f"phân tầng. Số mẫu hiện tại: {details}"
@@ -105,7 +109,10 @@ def report_error_analysis(y_true, y_pred, texts):
         return
 
     for true_label, pred_label, text in misclassified[:10]:
-        print(f"- Đúng: {true_label} | Dự đoán: {pred_label} | Văn bản: '{text}'")
+        print(
+            f"- Đúng: {true_label} | Dự đoán: {pred_label} "
+            f"| Văn bản: '{text}'"
+        )
 
 
 def mean_pooling(last_hidden_state, attention_mask):
@@ -124,11 +131,18 @@ def prepare_phobert_texts(texts, already_segmented=False):
 def extract_phobert_embeddings(
     texts, tokenizer, model, device, batch_size=16, max_length=128
 ):
+    if len(texts) == 0:
+        raise ValueError("Cần ít nhất một văn bản để trích xuất embedding.")
+    if batch_size < 1:
+        raise ValueError("batch_size phải từ 1 trở lên.")
+    if max_length < 1:
+        raise ValueError("max_length phải từ 1 trở lên.")
+
     embeddings = []
     model.eval()
     with torch.inference_mode():
         for start in range(0, len(texts), batch_size):
-            batch = texts[start : start + batch_size]
+            batch = texts[start:start + batch_size]
             inputs = tokenizer(
                 batch,
                 return_tensors="pt",
@@ -149,7 +163,11 @@ def create_population(size, n_features):
         raise ValueError("Kích thước quần thể GA phải từ 2 trở lên.")
     if n_features < 1:
         raise ValueError("Không có đặc trưng để GA lựa chọn.")
-    return np.random.randint(0, 2, size=(size, n_features), dtype=np.int8)
+    population = np.random.randint(
+        0, 2, size=(size, n_features), dtype=np.int8
+    )
+    population[0] = 1
+    return population
 
 
 def evaluate_mask(mask, X_train, y_train, X_validation, y_validation):
@@ -197,6 +215,8 @@ def genetic_algorithm(
     max_generations=25,
     mutation_rate=0.02,
 ):
+    if pop_size < 2:
+        raise ValueError("Kích thước quần thể GA phải từ 2 trở lên.")
     if max_generations < 1:
         raise ValueError("Số thế hệ GA phải từ 1 trở lên.")
     if not 0 <= mutation_rate <= 1:
@@ -204,6 +224,7 @@ def genetic_algorithm(
 
     random.seed(SEED)
     np.random.seed(SEED)
+    elite_count = min(2, pop_size - 1)
     population = create_population(pop_size, X_train.shape[1])
     best_mask = None
     best_result = None
@@ -220,7 +241,9 @@ def genetic_algorithm(
             )
             for chromosome in population
         ]
-        ranked = sorted(evaluated, key=lambda item: item[1]["fitness"], reverse=True)
+        ranked = sorted(
+            evaluated, key=lambda item: item[1]["fitness"], reverse=True
+        )
         current_mask, current_result = ranked[0]
 
         if current_result["fitness"] > best_score:
@@ -235,13 +258,19 @@ def genetic_algorithm(
             break
 
         scores = [result["fitness"] for _, result in ranked]
-        offspring = [chromosome.copy() for chromosome, _ in ranked[:2]]
+        offspring = [
+            chromosome.copy()
+            for chromosome, _ in ranked[:elite_count]
+        ]
         while len(offspring) < pop_size:
             parent_a = ranked[tournament_select(scores)][0]
             parent_b = ranked[tournament_select(scores)][0]
             child_a, child_b = uniform_crossover(parent_a, parent_b)
             offspring.extend(
-                [mutate(child_a, mutation_rate), mutate(child_b, mutation_rate)]
+                [
+                    mutate(child_a, mutation_rate),
+                    mutate(child_b, mutation_rate),
+                ]
             )
         population = np.asarray(offspring[:pop_size], dtype=np.int8)
 
@@ -257,16 +286,22 @@ def print_metrics(title, metrics):
     print(f"Macro-F1: {metrics['macro_f1']:.4f}")
 
 
-def parse_args():
+def parse_args(argv=None):
     parser = argparse.ArgumentParser(
         description=(
             "Phát hiện phát ngôn thù ghét tiếng Việt bằng PhoBERT và GA chọn "
             "chiều embedding."
         )
     )
-    parser.add_argument("csv_path", type=Path, help="CSV có cột văn bản và nhãn.")
-    parser.add_argument("--text-column", default="text", help="Tên cột văn bản.")
-    parser.add_argument("--label-column", default="label", help="Tên cột nhãn.")
+    parser.add_argument(
+        "csv_path", type=Path, help="CSV có cột văn bản và nhãn."
+    )
+    parser.add_argument(
+        "--text-column", default="text", help="Tên cột văn bản."
+    )
+    parser.add_argument(
+        "--label-column", default="label", help="Tên cột nhãn."
+    )
     parser.add_argument("--model-name", default="vinai/phobert-base")
     parser.add_argument(
         "--already-segmented",
@@ -279,18 +314,19 @@ def parse_args():
         default=PROJECT_ROOT / "outputs",
         help="Thư mục lưu kết quả.",
     )
-    return parser.parse_args()
+    return parser.parse_args(argv)
 
 
-def main():
-    args = parse_args()
+def main(argv=None):
+    args = parse_args(argv)
     set_seed()
 
     df = load_dataset(args.csv_path, args.text_column, args.label_column)
     train_df, validation_df, test_df = split_dataset(df)
     print(
         "Số mẫu: "
-        f"train={len(train_df)}, validation={len(validation_df)}, test={len(test_df)}"
+        f"train={len(train_df)}, validation={len(validation_df)}, "
+        f"test={len(test_df)}"
     )
     print(
         f"Số lớp: {df['label'].nunique()} | Thiết bị: "
@@ -302,7 +338,7 @@ def main():
     model = AutoModel.from_pretrained(args.model_name).to(device)
 
     print("\n=== Trích xuất embedding PhoBERT ===")
-    embedding_start = time.time()
+    embedding_start = time.perf_counter()
     X_train = extract_phobert_embeddings(
         prepare_phobert_texts(
             train_df["text"].tolist(), args.already_segmented
@@ -320,12 +356,14 @@ def main():
         device,
     )
     X_test = extract_phobert_embeddings(
-        prepare_phobert_texts(test_df["text"].tolist(), args.already_segmented),
+        prepare_phobert_texts(
+            test_df["text"].tolist(), args.already_segmented
+        ),
         tokenizer,
         model,
         device,
     )
-    embedding_time = time.time() - embedding_start
+    embedding_time = time.perf_counter() - embedding_start
     print(f"Kích thước embedding: {X_train.shape[1]}")
     print(f"Thời gian trích xuất embedding: {embedding_time:.2f}s")
 
@@ -344,14 +382,14 @@ def main():
     )
 
     print("\n=== Tìm đặc trưng bằng GA (validation only) ===")
-    ga_start = time.time()
+    ga_start = time.perf_counter()
     best_mask, best_result = genetic_algorithm(
         X_train,
         y_train,
         X_validation,
         y_validation,
     )
-    ga_time = time.time() - ga_start
+    ga_time = time.perf_counter() - ga_start
     selected_idx = np.flatnonzero(best_mask)
     print(
         f"Fitness tốt nhất: {best_result['fitness']:.4f} | "
@@ -401,7 +439,9 @@ def main():
     }
     results_path = args.output_dir / "hate_speech_ga_results.csv"
     predictions_path = args.output_dir / "hate_speech_test_predictions.csv"
-    selected_features_path = args.output_dir / "hate_speech_selected_features.npy"
+    selected_features_path = (
+        args.output_dir / "hate_speech_selected_features.npy"
+    )
     pd.DataFrame([summary]).to_csv(results_path, index=False)
     pd.DataFrame(
         {

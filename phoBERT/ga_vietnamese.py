@@ -6,15 +6,18 @@ from pathlib import Path
 import matplotlib
 
 matplotlib.use("Agg")
-import matplotlib.pyplot as plt
-import numpy as np
-import pandas as pd
-from scipy.sparse import vstack
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics import confusion_matrix, precision_recall_fscore_support
-from sklearn.model_selection import train_test_split
-from sklearn.svm import LinearSVC
-from underthesea import word_tokenize
+import matplotlib.pyplot as plt  # noqa: E402
+import numpy as np  # noqa: E402
+import pandas as pd  # noqa: E402
+from scipy.sparse import vstack  # noqa: E402
+from sklearn.feature_extraction.text import TfidfVectorizer  # noqa: E402
+from sklearn.metrics import (  # noqa: E402
+    confusion_matrix,
+    precision_recall_fscore_support,
+)
+from sklearn.model_selection import train_test_split  # noqa: E402
+from sklearn.svm import LinearSVC  # noqa: E402
+from underthesea import word_tokenize  # noqa: E402
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SEED = 42
@@ -53,7 +56,9 @@ def load_dataset(path, text_column, label_column):
     data["text"] = data["text"].astype(str)
     data["label"] = data["label"].astype(str)
     if data["label"].nunique() < 2:
-        raise ValueError("Cần ít nhất hai lớp nhãn để huấn luyện bộ phân loại.")
+        raise ValueError(
+            "Cần ít nhất hai lớp nhãn để huấn luyện bộ phân loại."
+        )
     return data
 
 
@@ -61,7 +66,9 @@ def split_dataset(df, seed=SEED):
     counts = df["label"].value_counts()
     too_small = counts[counts < 10]
     if not too_small.empty:
-        details = ", ".join(f"{label}: {count}" for label, count in too_small.items())
+        details = ", ".join(
+            f"{label}: {count}" for label, count in too_small.items()
+        )
         raise ValueError(
             "Cần ít nhất 10 mẫu cho mỗi lớp để chia train/validation/test có "
             f"phân tầng. Số mẫu hiện tại: {details}"
@@ -177,7 +184,10 @@ def report_error_analysis(y_true, y_pred, texts):
         return
 
     for true_label, pred_label, text in misclassified[:10]:
-        print(f"- Đúng: {true_label} | Dự đoán: {pred_label} | Văn bản: '{text}'")
+        print(
+            f"- Đúng: {true_label} | Dự đoán: {pred_label} "
+            f"| Văn bản: '{text}'"
+        )
 
 
 def create_population(size, n_features):
@@ -185,7 +195,9 @@ def create_population(size, n_features):
         raise ValueError("Kích thước quần thể GA phải từ 2 trở lên.")
     if n_features < 1:
         raise ValueError("Không có đặc trưng để GA lựa chọn.")
-    population = np.random.randint(0, 2, size=(size, n_features), dtype=np.int8)
+    population = np.random.randint(
+        0, 2, size=(size, n_features), dtype=np.int8
+    )
     population[0] = 1
     return population
 
@@ -264,7 +276,9 @@ def genetic_algorithm(
             )
             evaluated.append((chrom, result))
 
-        ranked = sorted(evaluated, key=lambda item: item[1]["fitness"], reverse=True)
+        ranked = sorted(
+            evaluated, key=lambda item: item[1]["fitness"], reverse=True
+        )
         current_mask, current_result = ranked[0]
 
         if current_result["fitness"] > best_score:
@@ -303,9 +317,15 @@ def parse_args(argv=None):
     parser = argparse.ArgumentParser(
         description="So sánh TF-IDF + LinearSVC với GA chọn đặc trưng."
     )
-    parser.add_argument("csv_path", type=Path, help="CSV có cột văn bản và nhãn.")
-    parser.add_argument("--text-column", default="text", help="Tên cột văn bản.")
-    parser.add_argument("--label-column", default="label", help="Tên cột nhãn.")
+    parser.add_argument(
+        "csv_path", type=Path, help="CSV có cột văn bản và nhãn."
+    )
+    parser.add_argument(
+        "--text-column", default="text", help="Tên cột văn bản."
+    )
+    parser.add_argument(
+        "--label-column", default="label", help="Tên cột nhãn."
+    )
     parser.add_argument(
         "--output-dir",
         type=Path,
@@ -357,14 +377,14 @@ def main(argv=None):
     print(f"Số mẫu validation: {len(X_validation_raw)}")
     print(f"Số mẫu test: {len(X_test_raw)}")
 
-    start = time.time()
+    start = time.perf_counter()
     X_train_tfidf = vectorizer.fit_transform(X_train_raw)
     X_validation_tfidf = vectorizer.transform(X_validation_raw)
     X_test_tfidf = vectorizer.transform(X_test_raw)
-    vectorization_time = time.time() - start
+    vectorization_time = time.perf_counter() - start
 
     print("\n=== Tìm đặc trưng bằng GA (validation only) ===")
-    ga_start = time.time()
+    ga_start = time.perf_counter()
     best_mask, best_result = genetic_algorithm(
         X_train_tfidf,
         y_train,
@@ -374,7 +394,7 @@ def main(argv=None):
         max_generations=args.max_generations,
         mutation_rate=args.mutation_rate,
     )
-    ga_time = time.time() - ga_start
+    ga_time = time.perf_counter() - ga_start
 
     selected_idx = np.flatnonzero(best_mask)
     if selected_idx.size == 0:
@@ -387,11 +407,11 @@ def main(argv=None):
     X_train_final = vstack((X_train_tfidf, X_validation_tfidf), format="csr")
     y_train_final = np.concatenate((y_train, y_validation))
 
-    baseline_start = time.time()
+    baseline_start = time.perf_counter()
     baseline_model = LinearSVC(C=1.0, random_state=SEED)
     baseline_model.fit(X_train_final, y_train_final)
     baseline_pred = baseline_model.predict(X_test_tfidf)
-    baseline_time = time.time() - baseline_start
+    baseline_time = time.perf_counter() - baseline_start
     baseline_metrics = compute_metrics(y_test, baseline_pred)
 
     ga_model = LinearSVC(C=1.0, random_state=SEED)
@@ -419,7 +439,9 @@ def main(argv=None):
         "ga_macro_f1": ga_metrics["macro_f1"],
         "selected_features": int(selected_idx.size),
         "total_features": X_train_tfidf.shape[1],
-        "feature_reduction": float(1 - selected_idx.size / X_train_tfidf.shape[1]),
+        "feature_reduction": float(
+            1 - selected_idx.size / X_train_tfidf.shape[1]
+        ),
         "ga_time_seconds": ga_time,
         "baseline_time_seconds": baseline_time,
         "vectorization_time_seconds": vectorization_time,
