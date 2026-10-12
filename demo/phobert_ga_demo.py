@@ -200,24 +200,17 @@ def tournament_select(scores, k=2):
 
 
 def uniform_crossover(parent_a, parent_b):
-    child_a = parent_a.copy()
-    child_b = parent_b.copy()
-    for i in range(len(parent_a)):
-        if random.random() < 0.5:
-            child_a[i] = parent_a[i]
-            child_b[i] = parent_b[i]
-        else:
-            child_a[i] = parent_b[i]
-            child_b[i] = parent_a[i]
+    mask = np.random.random(len(parent_a)) < 0.5
+    child_a = np.where(mask, parent_a, parent_b).astype(np.int8)
+    child_b = np.where(mask, parent_b, parent_a).astype(np.int8)
     return child_a, child_b
 
 
 def mutate(chromosome, mutation_rate=0.02):
     mutated = chromosome.copy()
-    for i in range(len(mutated)):
-        if random.random() < mutation_rate:
-            mutated[i] = 1 - mutated[i]
-    return mutated
+    mutation_mask = np.random.random(len(mutated)) < mutation_rate
+    mutated[mutation_mask] = 1 - mutated[mutation_mask]
+    return mutated.astype(np.int8)
 
 
 def genetic_algorithm(X_train, y_train, X_test, y_test, pop_size=20, max_generations=20, mutation_rate=0.02):
@@ -230,7 +223,7 @@ def genetic_algorithm(X_train, y_train, X_test, y_test, pop_size=20, max_generat
     best_score = -np.inf
     no_improve = 0
 
-    for generation in range(max_generations):
+    for _ in range(max_generations):
         evaluated = []
         for chrom in population:
             result = evaluate_mask(chrom, X_train, y_train, X_test, y_test)
