@@ -77,5 +77,6 @@
         "ylim",
         "yticklabels",
         "yticks"
-    ]
+    ],
+    "wolf.disableHotModeWarning": true
 }
