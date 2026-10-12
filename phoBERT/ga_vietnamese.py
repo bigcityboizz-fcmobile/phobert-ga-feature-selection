@@ -3,21 +3,18 @@ import random
 import time
 from pathlib import Path
 
-import matplotlib
-
-matplotlib.use("Agg")
-import matplotlib.pyplot as plt  # noqa: E402, RUF100
-import numpy as np  # noqa: E402, RUF100
-import pandas as pd  # noqa: E402, RUF100
-from scipy.sparse import vstack  # noqa: E402, RUF100
-from sklearn.feature_extraction.text import TfidfVectorizer  # noqa: E402, RUF100
-from sklearn.metrics import (  # noqa: E402, RUF100
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from scipy.sparse import vstack
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.metrics import (
     confusion_matrix,
     precision_recall_fscore_support,
 )
-from sklearn.model_selection import train_test_split  # noqa: E402, RUF100
-from sklearn.svm import LinearSVC  # noqa: E402, RUF100
-from underthesea import word_tokenize  # noqa: E402, RUF100
+from sklearn.model_selection import train_test_split
+from sklearn.svm import LinearSVC
+from underthesea import word_tokenize
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 SEED = 42
