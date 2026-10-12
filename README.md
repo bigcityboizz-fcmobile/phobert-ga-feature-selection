@@ -1,91 +1,41 @@
-# PhoBERT + GA cho phân loại văn bản tiếng Việt
+# PhoBERT + Genetic Algorithm phát hiện phát ngôn thù ghét tiếng Việt
 
-Bản demo này chuyển từ mô hình nền TF-IDF + SVM sang mô hình thực tế dựa trên PhoBERT:
+Phát hiện phát ngôn thù ghét tiếng Việt bằng PhoBERT; Genetic Algorithm (GA) lựa chọn tập chiều embedding phù hợp nhằm giảm chiều dữ liệu và tối ưu `macro-F1`. Pipeline đọc dữ liệu gán nhãn từ CSV, trích xuất embedding bằng `vinai/phobert-base`, rồi đánh giá các lựa chọn bằng bộ phân loại tuyến tính. Fitness dựa trên `macro-F1` của validation và trừ điểm theo tỷ lệ đặc trưng được giữ lại để khuyến khích giảm chiều.
 
-- Backbone: `vinai/phobert-base`
-- Mô hình phân loại: classifer tuyến tính trên embedding của PhoBERT
-- Tối ưu đặc trưng bằng Genetic Algorithm (GA)
-- Cá thể GA mã hóa bằng vector nhị phân
-- Hàm thích nghi kết hợp `macro-F1` và tỷ lệ số chiều đặc trưng được giữ lại
-- So sánh trước và sau GA
-- Báo cáo precision, recall, macro-F1, thời gian huấn luyện
-- Phân tích lỗi bằng confusion matrix
-
-## 1. Kiến trúc mô hình
-
-1. Tải tokenizer và mô hình PhoBERT từ Hugging Face.
-2. Chuyển văn bản tiếng Việt thành embedding bằng cách lấy mean pooling của hidden states của PhoBERT.
-3. Huấn luyện classifier tuyến tính (LinearSVC / LogisticRegression) trên embedding PhoBERT.
-4. Dùng GA để chọn tập con các chiều embedding để giảm số chiều và cải thiện hiệu suất.
-5. Đánh giá trực tiếp trên tập kiểm thử.
-
-## 2. Cấu trúc thư mục
-
-- `demo/phobert_ga_demo.py` — demo thực tế dùng PhoBERT
-- `README.md` — hướng dẫn
-- `requirements.txt` — package cần thiết
-
-## 3. Cài đặt môi trường
+## Cài đặt
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## 4. Chạy demo
+## Chuẩn bị dữ liệu và chạy
 
 ```bash
-python demo/ga_vietnamese_demo.py
+python demo/phobert_ga_demo.py data/vietnamese_hate_speech.csv \
+  --text-column text \
+  --label-column label
 ```
 
-Lưu ý: mô hình `vinai/phobert-base` sẽ được tải tự động từ Hugging Face. Nếu môi trường không có GPU, demo vẫn chạy trên CPU nhưng thời gian sẽ dài hơn.
+CSV phải có một hàng tiêu đề cùng cột văn bản và cột nhãn. Hỗ trợ phân loại nhị phân hoặc nhiều lớp; nhãn được đọc từ dữ liệu, không bị giới hạn vào tên lớp cố định. Cần ít nhất 10 mẫu cho mỗi lớp để tạo các tập train/validation/test có phân tầng.
 
-Sau khi chạy, script sẽ tự động lưu:
+Có thể dùng tên cột khác hoặc chọn mô hình/thư mục kết quả khác:
 
-- `outputs/ga_results.csv`
-- `outputs/confusion_matrix.png`
-- `outputs/metric_comparison.png`
-
-## 5. Kết quả mong đợi
-
-Mẫu báo cáo:
-
-```text
-=== PhoBERT embeddings + LinearSVC ===
-Precision: 0.87
-Recall: 0.85
-Macro-F1: 0.86
-Training time: 1.42s
-
-=== PhoBERT + GA feature selection ===
-Precision: 0.90
-Recall: 0.88
-Macro-F1: 0.89
-Selected features: 280 / 768
-Training time: 15.25s
-
-=== Improvement ===
-Macro-F1 +0.03
-Feature reduction: 63.5%
+```bash
+python demo/phobert_ga_demo.py data/dataset.csv \
+  --text-column comment \
+  --label-column class \
+  --model-name vinai/phobert-base \
+  --output-dir outputs
 ```
 
-## 6. Ý nghĩa
+Tokenizer và mô hình PhoBERT được tải từ Hugging Face khi chạy lần đầu. Pipeline tự chọn GPU nếu PyTorch CUDA khả dụng; nếu không thì chạy trên CPU.
 
-- PhoBERT là mô hình ngôn ngữ mạnh cho tiếng Việt.
-- Embedding từ PhoBERT mang thông tin ngữ nghĩa tốt hơn TF-IDF.
-- GA giúp giảm chiều đặc trưng, loại bỏ các chiều ít ích lợi, tăng hiệu quả biểu diễn và giảm độ phức tạp.
+Kết quả được ghi vào thư mục output:
 
-## 7. Mở rộng tiếp theo
+- `hate_speech_ga_results.csv` — precision, recall, macro-F1, số chiều và thời gian chạy.
+- `hate_speech_test_predictions.csv` — nhãn thật và dự đoán baseline/GA trên test.
+- `hate_speech_selected_features.npy` — chỉ số các chiều embedding được GA chọn.
 
-- dùng `vinai/phobert-large` nếu có GPU mạnh hơn
-- thay `LinearSVC` bằng `LogisticRegression`, `XGBoost`, hoặc head phân loại custom
-- chạy trên tập dữ liệu thực tế có nhãn lớn hơn
-- thêm `wandb` / `tensorboard` để theo dõi huấn luyện
+GA chỉ dùng train để huấn luyện và validation để chấm fitness/chọn đặc trưng. Test được giữ riêng đến bước đánh giá cuối; baseline và GA đều được huấn luyện lại trên train + validation trước khi so sánh trên test. Kết quả cải thiện macro-F1 không được đảm bảo và phụ thuộc vào dữ liệu, nhãn, cũng như seed.
 
-## 8. Lưu ý
-
-Demo này là phiên bản thực tế với PhoBERT, phù hợp để làm minh chứng cho đề tài nghiên cứu/đồ án. Để báo cáo khoa học hoàn chỉnh, bạn nên:
-
-- dùng tập dữ liệu có nhãn thực tế
-- chia train/val/test rõ ràng
-- chạy nhiều lần với seed khác nhau
-- báo cáo độ lệch chuẩn và kết quả trung bình
+`demo/ga_vietnamese_demo.py` là demo TF-IDF cũ, không phải pipeline PhoBERT phát hiện phát ngôn thù ghét.
