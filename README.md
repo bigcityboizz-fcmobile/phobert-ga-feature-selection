@@ -1,6 +1,6 @@
 # PhoBERT + Genetic Algorithm phát hiện phát ngôn thù ghét tiếng Việt
 
-Phát hiện phát ngôn thù ghét tiếng Việt bằng PhoBERT; Genetic Algorithm (GA) lựa chọn tập chiều embedding phù hợp nhằm giảm chiều dữ liệu và tối ưu `macro-F1`. Pipeline đọc dữ liệu gán nhãn từ CSV, trích xuất embedding bằng `vinai/phobert-base`, rồi đánh giá các lựa chọn bằng bộ phân loại tuyến tính. Fitness dựa trên `macro-F1` của validation và trừ điểm theo tỷ lệ đặc trưng được giữ lại để khuyến khích giảm chiều.
+Phát hiện phát ngôn thù ghét tiếng Việt bằng PhoBERT; Genetic Algorithm (GA) lựa chọn các chiều embedding phù hợp để giảm số chiều dữ liệu và cải thiện `macro-F1`. Pipeline đọc dữ liệu gán nhãn từ CSV, trích xuất embedding bằng `vinai/phobert-base`, rồi đánh giá các lựa chọn bằng bộ phân loại tuyến tính. Fitness dựa trên `macro-F1` của validation và trừ điểm theo tỷ lệ đặc trưng được giữ lại để khuyến khích giảm chiều.
 
 ## Cài đặt
 
